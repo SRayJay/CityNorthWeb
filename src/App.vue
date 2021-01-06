@@ -5,6 +5,7 @@
 </template>
 
 <style>
+
 *{
   padding: 0;
   margin: 0;
@@ -12,9 +13,9 @@
 
 .el-popover{
   /* height: 100%; */
-  max-height: 242px;
+  max-height: 240px;
   overflow: hidden;
-  white-space: pre-line;
+  /* white-space: pre-line; */
   text-overflow: ellipsis;
 }
 
@@ -25,7 +26,12 @@
   text-align: center;
   color: #2c3e50;
 }
-
+input{
+  outline: none;
+}
+button{
+  outline: none;
+}
 #nav {
   padding: 30px;
 }

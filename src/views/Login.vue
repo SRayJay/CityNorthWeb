@@ -19,25 +19,16 @@
 </template>
 
 <script>
-import LoginForm from '../components/LoginForm.vue'
-
-import FooterLine from '../components/FooterLine.vue'
 export default {
-  components: {
-    'LoginForm': LoginForm,
-
-    FooterLine
-  }
 
 }
 </script>
 
 <style scoped>
     .login{
-        /* width: 1590px; */
-        width:100%;
-        min-height: 100%;
-        height: 100%;
+      line-height: 0!important;
+      overflow:hidden;
+
         position: relative;
     }
     .content{

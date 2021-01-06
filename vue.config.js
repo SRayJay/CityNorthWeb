@@ -1,24 +1,43 @@
 const path = require('path')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 function resolve(dir) {
   return path.join(__dirname, dir)
 }
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+  publicPath: '/',
   outputDir: 'dist',
   assetsDir: 'static',
-  //   lintOnSave: process.env.NODE_ENV === 'development',
-  productionSourceMap: false,
-  //   configureWebpack: {
-  //     // provide the app's title in webpack's name field, so that
-  //     // it can be accessed in index.html to inject the correct title.
-  //     name: name,
-  //     resolve: {
-  //       alias: {
-  //         '@': resolve('src')
-  //       }
-  //     }
-  //   }
+  productionSourceMap: true,
+
+  devServer: {
+    port: 80,
+    disableHostCheck: true,
+    proxy: {
+      '/api': {
+        target: 'http://chengbei.site:28089/',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api': ''
+        }
+      }
+    }
+  },
+  configureWebpack: {
+    plugins: [
+      new BundleAnalyzerPlugin()
+    ],
+    externals: {
+      'vue': 'Vue',
+      'vue-router': 'VueRouter',
+      'axios': 'axios',
+      'js-cookie': 'Cookies',
+      'element-ui': 'ELEMENT',
+      'vuex': 'Vuex',
+      'wangeditor': 'wangEditor'
+    }
+
+  },
   chainWebpack: config => {
     config.resolve.symlinks(true)
     config.resolve.alias
@@ -27,6 +46,13 @@ module.exports = {
       .set('@components', resolve('src/components'))
       .set('@views', resolve('src/views'))
       .set('@utils', resolve('src/utils'))
+      .set('@photo', resolve('src/photo'))
+
+    // 发布模式的isProd为true
+    // config.plugin('html').tap(args => {
+    //   args[0].cdn = cdn
+    //   return args
+    // })
 
     config.module
       .rule('svg')

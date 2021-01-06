@@ -5,13 +5,13 @@
     :title="bookTitle"
     width="200"
     popper-class="popper"
-    close-delay="0"
+    :close-delay="0"
     trigger="hover"
     :content="bookIntro"
   >
 
-    <div slot="reference" class="book_card">
-      <img :src="bookPic" alt="" class="pic">
+    <div slot="reference" class="book_card" @click="toBookDetails">
+      <img :src="this.$host+bookPic" alt="" class="pic">
       <div class="bookname">{{ bookTitle }}</div>
       <div class="author">{{ bookAuthor }}</div>
     </div>
@@ -20,14 +20,37 @@
 <script>
 export default {
   name: 'BookThumb',
-  props: [
-    'bookTitle',
-    'bookPic',
-    'bookAuthor',
-    'bookIntro'],
+  props: {
+    'bookTitle': {
+      type: String,
+      default: ''
+    },
+    'bookPic': {
+      type: String,
+      default: ''
+    },
+    'bookAuthor': {
+      type: String,
+      default: ''
+    },
+    'bookIntro': {
+      type: String,
+      default: ''
+    },
+    'bookId': {
+      type: Number,
+      default: 0
+    }
+  },
   data: function() {
     return {
 
+    }
+  },
+  methods: {
+    toBookDetails() {
+      this.$router.push({ name: 'book', params: { bookid: this.bookId }})
+      // this.$router.push('/BookDetails/1')
     }
   }
 }
@@ -36,9 +59,10 @@ export default {
 <style scoped>
     #bookthumb{
         width: 131px;
-        height: 260px;
+        /* height: 260px; */
         position: relative;
         margin: 20px 25px;
+        cursor: pointer;
     }
     .book_card{
       /* border: 1px solid red; */
@@ -58,6 +82,8 @@ export default {
         text-overflow: ellipsis;
         padding-top: 8px;
         padding-bottom: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
     }
     .author{
         overflow: hidden;
@@ -71,6 +97,7 @@ export default {
     }
     .popper{
         height: 400px;
+        /* font-size: 20px; */
     }
 
 </style>

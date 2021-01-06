@@ -1,14 +1,19 @@
 <template>
-  <div style="">
-    <el-button type="primary" class="btn">
-      <span class="more">更多<i class="el-icon-arrow-right" /></span>
-    </el-button>
-  </div>
+
+  <el-button type="primary" class="btn" @click="toMore">
+    <span class="more">更多<i class="el-icon-arrow-right" /></span>
+  </el-button>
+
 </template>
 
 <script>
 export default {
-  name: 'BtnMore'
+  name: 'BtnMore',
+  methods: {
+    toMore() {
+      this.$emit('toMore')
+    }
+  }
 }
 </script>
 

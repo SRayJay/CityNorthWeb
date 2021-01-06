@@ -1,44 +1,59 @@
 <template>
-  <div class="home">
+  <div>
     <Header />
-    <div class="wrap">
-      <div class="content">
-        <div class="index_bg">
-          <img src="../assets/index_bg.png" alt="" class="bg_pic">
-          <div class="welcometext">Welcome to CityNorthBook</div>
-        </div>
-
-        <div class="search_back">
-          <input class="search_input" placeholder="搜索">
-          <div class="right_back">
-            <img id="search_icon" src="../assets/search.png" alt="">
-          </div>
-        </div>
-        <recom-books />
-        <anli-books />
-        <hot-books />
+    <div>
+      <div class="index_bg">
+        <img src="../assets/index_bg.png" alt="" class="bg_pic">
+        <div class="welcometext">Welcome to CityNorthBook</div>
       </div>
+
+      <div class="search_back">
+        <input ref="search_word" class="search_input" placeholder="搜索" @keyup.enter="search">
+        <div class="right_back" @click="search">
+          <img id="search_icon" src="@assets/icon/search.png" alt="">
+        </div>
+      </div>
+      <recom-books :recommend-book="recommendBook" />
+      <anli-books />
+      <hot-books :hot-book="hotBook" />
     </div>
     <footer-line />
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import Header from '@components/Header.vue'
-import FooterLine from '@components/FooterLine.vue'
-import RecomBooks from '@components/home/RecomBooks.vue'
-import AnliBooks from '@components/home/AnliBooks.vue'
-import HotBooks from '@components/home/HotBooks.vue'
+import { getIndex } from '@/api/public.js'
 export default {
   name: 'Home',
-  components: {
-    Header,
-    FooterLine,
-    RecomBooks,
-    AnliBooks,
-    HotBooks
+  data: function() {
+    return {
+      hotBook: [],
+      recommendBook: []
+    }
+  },
+  created: function() {
+    return new Promise((resolve, reject) => {
+      getIndex().then(response => {
+        const { data } = response
+        console.log(data)
+        this.hotBook = data.hotBook
+        this.recommendBook = data.recommendBook
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    }).catch((error) => {
+      console.log(error)
+    })
+  },
+  methods: {
+    search: function() {
+      if (this.$refs.search_word.value.trim() !== '') {
+        this.$router.push('/search')
+      }
+    }
   }
+
 }
 </script>
 <style scoped>
@@ -73,6 +88,7 @@ export default {
     width: 592px;
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.35);
     z-index: 1;
+    cursor: pointer;
   }
 
   .search_input{

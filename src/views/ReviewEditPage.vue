@@ -1,0 +1,313 @@
+<template>
+  <div>
+    <Header />
+    <div class="wrap">
+      <div class="bookBar">
+        <div class="bookPhoto">
+          <img :src="this.$host+bookInfo.bookPhotoUrl" alt="">
+        </div>
+        <div class="bookName">{{ bookInfo.bookName }}</div>
+        <div class="bookAuthor">{{ '['+bookInfo.authorCountry+']'+bookInfo.authorName }}</div>
+        <div class="publisherAndProducer">{{ bookInfo.producerName }}·{{ bookInfo.publisherName }}</div>
+        <div class="bookrate">
+          <el-rate :value="bookInfo.bookScore/2" disabled />
+        </div>
+        <div class="rate_num">{{ bookInfo.bookScore.toFixed(1) }}</div>
+      </div>
+      <div v-if="bookInfo!=null">
+        <div class="nextBar">
+          <div class="text">给个评价吧</div>
+          <div class="rateBar">
+            <el-rate v-model="gaveRate" allow-half class="rate" />
+          </div>
+          <div class="btnPublish">
+            <button class="publish" @click="publish">发表</button>
+          </div>
+          <el-dialog
+            title="提示"
+            :visible.sync="showSubmitDaialog"
+            width="20%"
+          >
+            <span>确认发表书评吗？</span>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="showSubmitDaialog = false">取 消</el-button>
+              <el-button type="primary" @click="postReview">确 定</el-button>
+            </span>
+          </el-dialog>
+        </div>
+        <div class="title">
+          <input v-model="reviewTitle" maxlength="20" type="text" class="title_input" placeholder="添加标题">
+          <div class="cutline" />
+        </div>
+        <div class="editor">
+          <div ref="toolbar" class="toolbar" />
+          <div ref="editor" class="edittext" />
+        </div>
+      </div>
+    </div>
+    <!-- <button style="width:100px;height:100px;" @click="getContent">get</button> -->
+    <footer-line />
+  </div>
+</template>
+
+<script>
+import E from 'wangeditor'
+// import axios from 'axios'
+/*global axios */
+// import { publishReview } from '@/api/write.js'
+import xss from 'xss'
+export default {
+  name: 'ReviewEditPage',
+  data: function() {
+    return {
+      showSubmitDaialog: false,
+      bookInfo: {},
+      gaveRate: 0,
+      reviewTitle: '',
+      editor: null,
+      info_: null,
+      now_date: '',
+      now_time: ''
+    }
+  },
+
+  created() {
+    this.bookInfo = JSON.parse(this.$route.query.bookInfo)
+  },
+
+  mounted() {
+    this.$nextTick(() => {
+      this.seteditor()
+      this.editor.txt.html(this.value)
+    })
+  },
+  methods: {
+    publish() {
+      // 先验证
+      // 再发送api请求
+      var initText = this.editor.txt.text()
+      var afterText1 = initText.replace(/&nbsp;/g, '')
+      var afterText2 = afterText1.replace(/&amp;/g, '&')
+
+      if (afterText2.length < 200) {
+        this.$message({
+          message: '书评字数不可少于200',
+          type: 'warning'
+        })
+      } else if (afterText2.length > 20000) {
+        this.$message({
+          message: '书评字数不可超过20000',
+          type: 'warning'
+        })
+      } else if (this.gaveRate === 0) {
+        this.$message({
+          message: '请给书籍打分',
+          type: 'warning'
+        })
+      } else if (this.reviewTitle.length === 0) {
+        this.$message({
+          message: '请输入书评标题',
+          type: 'warning'
+        })
+      } else {
+        this.showSubmitDaialog = true
+      }
+    },
+    postReview() {
+      this.showSubmitDaialog = false
+      this.getNowTime()
+      axios.post(
+        '/api/write/review', {
+          userId: this.$store.state.user.userInfo.userId,
+          bookId: this.bookInfo.bookId,
+          reviewContent: this.editor.txt.html(),
+          reviewText: xss(this.editor.txt.text()),
+          reviewTime: this.now_date + this.now_time,
+          reviewTitle: this.reviewTitle,
+          gaveScore: this.gaveRate * 2
+        }
+      ).then((res) => {
+        console.log(res)
+        this.$message({
+          message: '成功',
+          type: 'success'
+        })
+        this.$router.push({ name: 'ReviewContentPage', params: { reviewid: res.data.reviewId }})
+      }).catch((error) => {
+        console.log(error)
+      })
+    },
+    getNowTime() {
+      const date_ = new Date()
+      const Y = date_.getFullYear()
+      const M = date_.getMonth() + 1
+      const D = date_.getDate()
+      let H = date_.getHours()
+      let Min = date_.getMinutes()
+      let S = date_.getSeconds()
+      H = H < 10 ? '0' + H : H
+      Min = Min < 10 ? '0' + Min : Min
+      S = S < 10 ? '0' + S : S
+      this.now_date = Y + '年' + M + '月' + D + '日 '
+      this.now_time = H + ':' + Min + ':' + S
+    },
+    seteditor() {
+      this.editor = new E(this.$refs.toolbar, this.$refs.editor)
+      this.editor.config.placeholder = '写书评...'
+      this.editor.config.focus = false
+      this.editor.config.pasteFilterStyle = false
+      this.editor.config.menus = [
+        'head', // 标题
+        'bold', // 粗体
+        'fontSize', // 字号
+        'fontName', // 字体
+        'italic', // 斜体
+        'underline', // 下划线
+        'strikeThrough', // 删除线
+        'foreColor', // 文字颜色
+        'indent', // 缩进
+        'link', // 插入链接
+        'list', // 列表
+        'justify', // 对齐方式
+        'quote', // 引用
+        'emoticon', // 表情
+        'image', // 插入图片
+        'splitLine',
+        'undo', // 撤销
+        'redo' // 重复
+      ]
+      this.editor.create()
+    }
+  }
+
+}
+
+</script>
+
+<style scoped>
+.wrap{
+    width:750px;
+    margin: 0 auto;
+    margin-top: 30px;
+
+}
+.bookBar{
+    height: 150px;
+    background: #f2f2f2;
+    position: relative;
+}
+.nextBar{
+    height: 30px;
+    margin-top: 30px;
+    position: relative;
+    line-height: 30px;
+}
+.text{
+    text-align: left;
+    float: left;
+    font-size: 14px;
+}
+.rateBar{
+    float: left;
+    margin-left: 30px;
+    line-height: 30px;
+}
+.rate{
+    line-height: 30px;
+    margin-top: 6px;
+}
+.btnPublish{
+    float: right;
+}
+.publish{
+    height: 30px;
+    width: 83px;
+    background: rgba(51, 121, 204, 1);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+}
+.bookPhoto{
+    width: 86px;
+    height: 120px;
+    position: absolute;
+    left: 20px;
+    top: 15px;
+    cursor: pointer;
+    border-radius: 10px;
+    /* background: url('../assets/icon/no_book.png'); */
+
+}
+.bookPhoto img{
+    background-size: 100% 100%;
+    width: 86px;
+    height:120px;
+    border-radius: 10px;
+    -moz-background-size:100% 100%;
+}
+.bookName{
+    color: #3379c6;
+    position: absolute;
+    left:140px;
+    font-size: 18px;
+    top:15px
+}
+.bookAuthor{
+    font-size: 14px;
+    left:140px;
+    top: 50px;
+    position: absolute;
+}
+.publisherAndProducer{
+    position: absolute;
+    left: 140px;
+    top: 80px;
+    font-size: 14px;
+}
+.bookrate{
+    position: absolute;
+    left: 140px;
+    top: 115px;
+    font-size: 18px;
+}
+.rate_num{
+    position: absolute;
+    left: 270px;
+    top: 115px;
+    font-size: 20px;
+    color: #F59A23;
+}
+
+.title{
+  text-align: left;
+  width: 750px;
+  margin: 20px auto;
+
+}
+.title_input{
+  height: 32px;
+  line-height: 32px;
+  border:none;
+  font-size: 18px;
+  width: 500px;
+  outline: none;
+}
+.cutline{
+    width: 750px;
+    height: 1px;
+    background: #ccc;
+    margin-top: 20px;
+}
+.editor {
+  width: 750px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 0;
+  margin-bottom: 40px;
+}
+.edittext {
+  /* border: 1px solid #ccc; */
+  min-height: 500px;
+}
+</style>

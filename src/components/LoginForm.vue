@@ -8,40 +8,44 @@
       v-if="ActLogin"
       ref="loginForm"
       v-loading="loading"
-      :rules="rules"
+      :rules="login_rules"
       :model="loginForm"
       class="login-form"
       label-position="left"
     >
-      <el-form-item prop="username">
+      <el-form-item prop="login_username">
         <i class="el-icon-user-solid svg-container" />
         <el-input
-          ref="username"
-          v-model="loginForm.username"
+          ref="login_username"
+          v-model="loginForm.login_username"
           type="text"
-          name="username"
+          name="login_username"
           auto-complete="true"
           placeholder="账号"
           tabindex="1"
         />
       </el-form-item>
-      <el-form-item prop="password">
-        <i class="el-icon-lock svg-container" />
-        <el-input
-          :key="passwordType"
-          ref="password"
-          v-model="loginForm.password"
-          :type="passwordType"
-          tabindex="2"
-          name="password"
-          auto-complete="on"
-          placeholder="密码"
-          @keyup.enter.native="handleLogin"
-        />
-        <span class="show-pwd" @click="showPwd">
-          <svg-icon :icon-class="passwordType==='password'?'eye':'eye-open'" />
-        </span>
-      </el-form-item>
+      <el-tooltip v-model="capsTooltip" content="大写已锁定" placement="right" manual>
+        <el-form-item prop="login_password">
+          <i class="el-icon-lock svg-container" />
+          <el-input
+            :key="passwordType"
+            ref="login_password"
+            v-model="loginForm.login_password"
+            :type="passwordType"
+            tabindex="2"
+            name="login_password"
+            auto-complete="on"
+            placeholder="密码"
+            @blur="capsTooltip = false"
+            @keyup.native="checkCapslock"
+            @keyup.enter.native="handleLogin"
+          />
+          <span class="show-pwd" @click="showPwd">
+            <svg-icon :icon-class="passwordType==='password'?'eye':'eye-open'" />
+          </span>
+        </el-form-item>
+      </el-tooltip>
       <!-- <el-checkbox v-model="checked" class="login_remember" label-position="left">记住密码</el-checkbox> -->
       <!-- <el-form-item style="width:100%" /> -->
       <el-button
@@ -54,59 +58,67 @@
     </el-form>
     <el-form
       v-else
-      ref="loginForm"
+      ref="registerForm"
       v-loading="loading"
-      :rules="rules"
-      :model="loginForm"
+      :rules="register_rules"
+      :model="registerForm"
       class="login-form"
       label-position="left"
     >
 
-      <el-form-item prop="username">
+      <el-form-item prop="register_username">
         <i class="el-icon-user-solid svg-container" />
         <el-input
-          ref="username"
-          v-model="loginForm.username"
+          ref="register_username"
+          v-model="registerForm.register_username"
           type="text"
-          name="username"
+          name="register_username"
           auto-complete="true"
           placeholder="用户名"
           tabindex="1"
         />
       </el-form-item>
-      <el-form-item prop="password">
-        <i class="el-icon-lock svg-container" />
-        <el-input
-          :key="passwordType"
-          ref="password"
-          v-model="loginForm.password"
-          :type="passwordType"
-          tabindex="2"
-          name="password"
-          auto-complete="on"
-          placeholder="密码"
-        />
-        <span class="show-pwd" @click="showPwd">
-          <svg-icon :icon-class="passwordType==='password'?'eye':'eye-open'" />
-        </span>
-      </el-form-item>
-      <el-form-item prop="checkpassword">
-        <i class="el-icon-lock svg-container" />
-        <el-input
-          :key="passwordType"
-          ref="checkpassword"
-          v-model="registForm.checkpassword"
-          :type="passwordType"
-          tabindex="2"
-          name="checkpassword"
-          auto-complete="on"
-          placeholder="确认密码"
-          @keyup.enter.native="handleRegist"
-        />
-        <span class="show-pwd" @click="showCheckPwd">
-          <svg-icon :icon-class="passwordType==='password'?'eye':'eye-open'" />
-        </span>
-      </el-form-item>
+      <el-tooltip v-model="capsTooltip" content="大写已锁定" placement="right" manual>
+        <el-form-item prop="register_password">
+          <i class="el-icon-lock svg-container" />
+          <el-input
+            :key="passwordType"
+            ref="register_password"
+            v-model="registerForm.register_password"
+            :type="passwordType"
+            tabindex="2"
+            name="register_password"
+            auto-complete="on"
+            placeholder="密码"
+            @blur="capsTooltip = false"
+            @keyup.native="checkCapslock"
+          />
+          <span class="show-pwd" @click="showPwd">
+            <svg-icon :icon-class="passwordType==='password'?'eye':'eye-open'" />
+          </span>
+        </el-form-item>
+      </el-tooltip>
+      <el-tooltip v-model="capsTooltip" content="大写已锁定" placement="right" manual>
+        <el-form-item prop="register_checkpassword">
+          <i class="el-icon-lock svg-container" />
+          <el-input
+            :key="passwordType"
+            ref="register_checkpassword"
+            v-model="registerForm.register_checkpassword"
+            :type="passwordType"
+            tabindex="2"
+            name="checkpassword"
+            auto-complete="on"
+            placeholder="确认密码"
+            @blur="capsTooltip = false"
+            @keyup.native="checkCapslock"
+            @keyup.enter.native="handleRegister"
+          />
+          <span class="show-pwd" @click="showCheckPwd">
+            <svg-icon :icon-class="passwordType==='password'?'eye':'eye-open'" />
+          </span>
+        </el-form-item>
+      </el-tooltip>
       <!-- <el-checkbox v-model="checked" class="login_remember" label-position="left">记住密码</el-checkbox> -->
       <!-- <el-form-item style="width:100%" /> -->
       <el-button
@@ -114,7 +126,7 @@
         type="primary"
         style="width:100%;
         margin-bottom:30px"
-        @click.native.prevent="handleLogin"
+        @click.native.prevent="handleRegister"
       >注册</el-button>
     </el-form>
   </div>
@@ -128,48 +140,63 @@ export default {
     SvgIcon
   },
   data() {
-    // const validateUsername = (rule, value, callback) => {
-    //   if (!validUsername(value)) {
-    //     callback(new Error('请输入正确用户名'))
-    //   } else {
-    //     callback()
-    //   }
-    // }
-    // const validatePassword = (rule, value, callback) => {
-    //   if (value.length < 6) {
-    //     callback(new Error('密码不能少于6位'))
-    //   } else {
-    //     callback()
-    //   }
-    // }
+    const pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]")
+    const validateName = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入用户名'))
+      } else if (value.length > 10) {
+        callback(new Error('用户名长度不能多于10位'))
+      } else if (pattern.test(value)) {
+        callback(new Error('用户名不允许有特殊字符'))
+      } else {
+        callback()
+      }
+    }
+    const validatePwd = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入密码'))
+      } else if (value.length > 15) {
+        callback(new Error('密码长度不能多于15位'))
+      } else if (value.length < 6) {
+        callback(new Error('密码长度不能少于6位'))
+      } else {
+        callback()
+      }
+    }
+    const validateCheckPwd = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请确认密码'))
+      } else if (value !== this.registerForm.register_password) {
+        callback(new Error('两次密码不一致'))
+      } else {
+        callback()
+      }
+    }
     return {
       ActLogin: true,
       title: '用户登录',
-      rules: {
-        account: [{
-          required: true,
-          message: '请输入用户名',
-          trigger: 'blur'
-        }],
-        checkPass: [{
-          required: true,
-          message: '请输入密码',
-          trigger: 'blur'
-        }]
+      login_rules: {
+        login_username: [{ validator: validateName, trigger: 'blur' }],
+        login_password: [{ validator: validatePwd, trigger: 'blur' }]
+      },
+      register_rules: {
+        register_username: [{ validator: validateName, trigger: 'blur' }],
+        register_password: [{ validator: validatePwd, trigger: 'blur' }],
+        register_checkpassword: [{ validator: validateCheckPwd, trigger: 'blur' }]
       },
       checked: true,
       loginForm: {
-        username: 'admin',
-        password: '123'
+        login_username: '',
+        login_password: ''
       },
-      registForm: {
-        username: 'bbb',
-        password: 'aaa',
-        checkpassword: 'aaa'
+      registerForm: {
+        register_username: '',
+        register_password: '',
+        register_checkpassword: ''
       },
+      capsTooltip: false,
       loading: false,
-      passwordType: 'password',
-      redirect: undefined
+      passwordType: 'password'
     }
   },
   watch: {
@@ -181,6 +208,10 @@ export default {
     }
   },
   methods: {
+    checkCapslock(e) {
+      const { key } = e
+      this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
+    },
     toLogin() {
       this.ActLogin = true
     },
@@ -193,23 +224,62 @@ export default {
       } else {
         this.passwordType = 'password'
       }
-      this.$nextTick(() => {
-        this.$refs.password.focus()
-      })
+    },
+    showCheckPwd() {
+      if (this.passwordType === 'password') {
+        this.passwordType = ''
+      } else {
+        this.passwordType = 'password'
+      }
     },
     handleLogin: function() {
-      var _this = this
-      this.loading = true
-      this.postRequest('/login', {
-        username: this.loginForm.username,
-        password: this.loginForm.password
-      }).then(res => {
-        _this.loading = false
-        if (res && res.status === 200) {
-          var data = res.data
-          _this.$store.commit('login', data.obj)
-          var path = _this.$route.query.redirect
-          _this.$router.replace({ path: path === '/' || path === undefined ? '/home' : path })
+      this.$refs.loginForm.validate(valid => {
+        this.loading = true
+        if (valid) {
+          this.$store.dispatch('user/login', this.loginForm).then(() => {
+            this.loading = false
+            this.$router.push({ path: '/' })
+          }, (data) => {
+            this.$message.error({
+              message: '用户名或密码错误'
+            })
+            this.loading = false
+          }).catch(function(error) {
+            console.log(error)
+          })
+        } else {
+          this.loading = false
+          this.$message.error({
+            message: '用户名或密码格式不正确，请重新输入'
+          })
+          console.log('error login!!')
+          return false
+        }
+      })
+    },
+    handleRegister: function() {
+      this.$refs.registerForm.validate(valid => {
+        this.loading = true
+        if (valid) {
+          this.$store.dispatch('user/register', this.registerForm).then(() => {
+            this.loading = false
+            this.$router.push({ path: '/' })
+          }, (data) => {
+            this.$message.error({
+              message: '用户名已存在'
+            })
+            console.log(data)
+            this.loading = false
+          }).catch(error => {
+            console.log(error)
+          })
+        } else {
+          this.loading = false
+          this.$message.error({
+            message: '用户名或密码格式不正确，请重新输入'
+          })
+          console.log('error register!!')
+          return false
         }
       })
     }
@@ -251,6 +321,7 @@ export default {
 <style lang="scss" scoped>
 $dark_gray:#889aa4;
   .login-container{
+    line-height: 0!important;
     // min-height: 100%;
     border-radius: 15px;
     background-clip: padding-box;
@@ -263,48 +334,30 @@ $dark_gray:#889aa4;
     position: relative;
     .underline-c-out{
         position: relative;
-        transition: all .3s;
-        z-index: 1;
+        margin-left: 40px;
     }
-    .underline-c-out:before{
-      position: absolute;
-      transition: all .3s;
-      content: "";
-      display: block;
-      background: #09f;
-      z-index: -1;
-      height: 2px;
-      width: 100%;
-      transform: scaleX(0);
-    }
-    .underline-c-out:before {
-        bottom: 0;
-        left: 0;
-        right: 0;
-        margin: auto;
-    }
-    .underline-c-out:hover:before{
-      transform: scaleX(1);
-    }
+
     .title_left{
-      margin: 0px auto 0px auto;
+      // margin: 0px auto 0px auto;
+      margin-bottom: 40px;
       text-align: center;
       color: #505458;
       cursor: pointer;
       font-size: 20px;
       position: relative;
       float: left;
-      left: 40px;
+      // left: 40px;
     }
     .title_right{
-      margin: 0px auto 40px auto;
+      // margin: 0px auto 40px auto;
+      margin-bottom: 40px;
       text-align: center;
       color: #505458;
       font-size: 20px;
-      float:right;
+      float:left;
       cursor: pointer;
       position: relative;
-      right: 40px;
+      // margin-left: 38px;
     }
     .toLogin{
       color: #0078F7;
@@ -341,11 +394,5 @@ $dark_gray:#889aa4;
       user-select: none;
     }
   }
-
-</style>
-<style scoped>
-    .login-container{
-
-    }
 
 </style>

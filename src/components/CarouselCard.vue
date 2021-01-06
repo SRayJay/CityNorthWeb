@@ -1,50 +1,41 @@
 <template>
   <div class="carousel">
-    <div class="left_arrow" @click="zuohua">
+    <div class="left_arrow" @click="zuohua" @mouseenter="stopmove()" @mouseleave="move()">
       <img src="@assets/icon/left_arrow.svg" alt="">
     </div>
     <div class="wrapper">
-
-      <div v-if="num===1" class="card">
-        <img :src="anlibooks[0].img" class="book_pic" alt="">
-        <div class="title">{{ anlibooks[0].title }}</div>
-        <div class="author">{{ anlibooks[0].author }}</div>
-        <div class="publisher">{{ anlibooks[0].publisher }}</div>
-        <div class="intro">{{ anlibooks[0].intro }}</div>
-        <el-rate
-          v-model="anlibooks[0].rate"
-          class="rate"
-          disabled
-          show-score
-          text-color="#ff9900"
-          score-template="{value}"
-        />
-        <div class="category">
-          {{ anlibooks[0].category }}
-        </div>
-      </div>
-      <div v-else-if="num===2" class="card">
-        <img :src="anlibooks[1].img" class="book_pic" alt="">
-        <div class="title">{{ anlibooks[1].title }}</div>
-        <div class="author">{{ anlibooks[1].author }}</div>
-        <div class="publisher">{{ anlibooks[1].publisher }}</div>
-        <div class="intro">{{ anlibooks[1].intro }}</div>
-      </div>
-      <div v-else-if="num===3" class="card">
-        <img :src="anlibooks[2].img" class="book_pic" alt="">
-        <div class="title">{{ anlibooks[2].title }}</div>
-        <div class="author">{{ anlibooks[2].author }}</div>
-        <div class="publisher">{{ anlibooks[2].publisher }}</div>
-        <div class="intro">{{ anlibooks[2].intro }}</div>
+      <div class="card">
+        <ul :style="{'left':calleft + 'px'}" @mouseenter="stopmove()" @mouseleave="move()">
+          <li v-for="(item, index) in anlibooks" :key="index">
+            <div class="card">
+              <img :src="anlibooks[index].img" class="book_pic" alt="">
+              <div class="title">{{ anlibooks[index].title }}</div>
+              <div class="author">{{ anlibooks[index].author }}</div>
+              <div class="publisher">{{ anlibooks[index].publisher }}</div>
+              <div class="intro">{{ anlibooks[index].intro }}</div>
+              <el-rate
+                v-model="anlibooks[index].rate"
+                class="rate"
+                disabled
+                show-score
+                text-color="#ff9900"
+                score-template="{value}"
+              />
+              <div class="category">
+                {{ anlibooks[index].category }}
+              </div>
+            </div>
+          </li>
+        </ul>
       </div>
     </div>
-    <div class="xiangxiBtn">详细信息</div>
+    <div class="xiangxiBtn" @click="getInfo()">详细信息</div>
     <div class="numberBar">
-      <div class="dot" @click="toDot(1)">1</div>
-      <div class="dot" @click="toDot(2)">2</div>
-      <div class="dot" @click="toDot(3)">3</div>
+      <div :class="calleft == '0'? 'dot' : 'dot_chosen'" @click="toDot(0)" @mouseenter="stopmove()" @mouseleave="move()" />
+      <div :class="calleft == '-664'? 'dot' : 'dot_chosen'" @click="toDot(1)" @mouseenter="stopmove()" @mouseleave="move()" />
+      <div :class="calleft == '-1328'? 'dot' : 'dot_chosen'" @click="toDot(2)" @mouseenter="stopmove()" @mouseleave="move()" />
     </div>
-    <div class="right_arrow" @click="youhua">
+    <div class="right_arrow" @click="youhua" @mouseenter="stopmove()" @mouseleave="move()">
       <img src="@assets/icon/right_arrow.svg" alt="">
     </div>
   </div>
@@ -54,10 +45,10 @@ export default {
   name: 'CarouselCard',
   data() {
     return {
-      num: 1,
+      timer: null,
       anlibooks: [
         {
-          index: 1,
+          // index: 0,
           img: require('@assets/babieta.jpg'),
           title: '碎片',
           author: '[意]埃莱娜·费兰特',
@@ -67,7 +58,7 @@ export default {
           category: '小说'
         },
         {
-          index: 2,
+          // index: 1,
           img: require('@assets/daofeng.jpg'),
           title: '刀锋',
           author: '[英]毛姆',
@@ -77,7 +68,7 @@ export default {
           category: '小说'
         },
         {
-          index: 3,
+          // index: 2,
           img: require('@assets/bailuyuan.jpg'),
           title: '白鹿原',
           author: '陈忠实',
@@ -86,31 +77,54 @@ export default {
           rate: 4.5,
           category: '小说'
         }
-      ]
+      ],
+      calleft: 0
     }
   },
+  created() {
+    this.move()
+  },
   methods: {
-    zuohua() {
-      if (this.num === 1) {
-        this.num = 3
-      } else {
-        this.num -= 1
-      }
-      console.log(this.num)
+    getInfo() {
+      var a = -(this.calleft / 664)
+      console.log(this.anlibooks[a].author)
     },
+    toDot(index) {
+      this.calleft = -(index * 664)
+    },
+    move() {
+      this.timer = window.setInterval(() => {
+        this.calleft -= 664
+        if (this.calleft < -1328) {
+          this.calleft = 0
+        }
+        // console.log(this.calleft)
+      }, 2500)
+    },
+    starmove() {
+      this.calleft -= 664
+      if (this.calleft < -1328) {
+        this.calleft = 0
+      }
+    },
+    stopmove() {
+      clearInterval(this.timer)
+    },
+
     youhua() {
-      if (this.num === 3) {
-        this.num = 1
-      } else {
-        this.num += 1
+      this.calleft -= 664
+      if (this.calleft < -1328) {
+        this.calleft = 0
       }
-      console.log(this.num)
     },
-    toDot(e) {
-      this.num = e
+
+    zuohua() {
+      this.calleft += 664
+      if (this.calleft > 0) {
+        this.calleft = -1328
+      }
     }
   }
-
 }
 </script>
 
@@ -133,8 +147,9 @@ export default {
     height: 276px;
     width:664px;
     background-color: rgba(242, 242, 242, 0.5);
-    position: absolute;
+    position: relative;
     left: 50%;
+    display: flex;
     transform: translate(-50%,0);
     /* width:50%; */
   }
@@ -165,7 +180,7 @@ export default {
     font-size: 13px;
   }
   .intro{
-    position:absolute;
+    position: absolute;
     left: 265px;
     top: 117px;
     width: 374px;
@@ -229,13 +244,12 @@ export default {
     height: 20px;
     position:absolute;
     top: 320px;
-    left: 50%;
+    left: 46%;
     margin: 0 auto;
   }
   .dot{
     margin:0 2px;
     float: left;
-    color: #fff;
     font-size: 14px;
     line-height: 20px;
     height: 20px;
@@ -244,5 +258,25 @@ export default {
     cursor: pointer;
     background: rgba(121, 121, 121, 1);
   }
-
+  .dot_chosen{
+    margin:0 2px;
+    float: left;
+    font-size: 14px;
+    line-height: 20px;
+    height: 20px;
+    border-radius: 3px;
+    width: 20px;
+    cursor: pointer;
+    background: rgb(212, 212, 212);
+  }
+  .card ul li{
+    width: 664px;
+    float: left;
+    display: flex;
+  }
+  .card ul{
+    display: flex;
+    position: relative;
+    transition-duration: 500ms;
+  }
 </style>

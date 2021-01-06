@@ -2,7 +2,7 @@
   <div class="content">
     <div class="title">种草好书</div>
     <!-- <div class="subtitle">搜罗好书，只为有趣的灵魂</div> -->
-    <btn-more class="btnmore" />
+    <!-- <btn-more class="btnmore" /> -->
     <div class="carousel_bar">
       <carousel-card />
     </div>
@@ -10,14 +10,9 @@
 </template>
 
 <script>
-import BtnMore from '@components/BtnMore.vue'
-import CarouselCard from '@components/home/CarouselCard.vue'
 export default {
-  name: 'AnliBooks',
-  components: {
-    BtnMore,
-    CarouselCard
-  }
+  name: 'AnliBooks'
+
 }
 </script>
 
@@ -39,12 +34,12 @@ export default {
         font-family: PingFang SC Bold, PingFang SC Regular, PingFang SC, sans-serif;
         font-style: normal;
     }
-    .btnmore{
+    /* .btnmore{
         float: right;
         position: absolute;
         top: 25px;
         right: 40px;
-    }
+    } */
     .carousel_bar{
         position: absolute;
         left:0;
