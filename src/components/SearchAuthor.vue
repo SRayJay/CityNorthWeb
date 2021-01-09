@@ -1,10 +1,10 @@
 <template>
   <div class="content">
-    <img :src="author.authorPhoto" alt="" class="authorPhoto">
+    <img :src="$host+author.authorPhoto" alt="" class="authorPhoto">
     <div class="container">
       <div class="authorName">{{ author.authorName }}</div>
       <div class="authorCountry">{{ author.authorCountry }}</div>
-      <div class="authorBirth">出生年月：{{ author.authorBirth }}</div>
+      <div class="authorBirth">出生年月：{{ author.authorBirthday }}</div>
     </div>
   </div>
 </template>
@@ -12,22 +12,22 @@
 <script>
 export default {
   name: 'SearchAuthor',
-  // props: {
-  //   'author': {
-  //     type: Object,
-  //     default: function() {
-  //       return {}
-  //     }
-  //   }
-  // },
+  props: {
+    'author': {
+      type: Object,
+      default: function() {
+        return {}
+      }
+    }
+  },
   data: function() {
     return {
-      author: {
-        authorPhoto: require('@assets/gelike.jpg'),
-        authorName: '露易丝·格丽克',
-        authorCountry: '美国',
-        authorBirth: '1943年4月7日'
-      }
+      // author: {
+      //   authorPhoto: require('@assets/gelike.jpg'),
+      //   authorName: '露易丝·格丽克',
+      //   authorCountry: '美国',
+      //   authorBirth: '1943年4月7日'
+      // }
     }
   }
 }

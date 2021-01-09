@@ -3,14 +3,17 @@
     <Header />
     <div class="wrap">
       <div class="momentBar">
-        <el-tabs style="background:#f8f8f8;" type="border-card">
-          <el-tab-pane label="动态" />
-          <el-tab-pane label="关注" />
+        <el-tabs style="background:#f8f8f8;min-height:800px;" type="border-card">
+          <el-tab-pane v-infinite-scroll="load" label="动态" style="overflow: auto;height:auto;" infinite-scroll-immediate="false">
+            <!-- 无限加载没完成 -->
+            <div v-for="moment in moments" :key="moment.momentId">
+              <community-moment :moment-info="moment" class="singleMoment" />
+              <el-divider />
+            </div>
 
-          <div v-for="moment in moments" :key="moment.momentId">
-            <community-moment :moment-info="moment" class="singleMoment" />
-            <el-divider />
-          </div>
+            <p v-if="loading">加载中...</p>
+          </el-tab-pane>
+          <el-tab-pane label="关注" />
         </el-tabs>
       </div>
       <div class="actionBar">
@@ -19,7 +22,7 @@
             <div class="actSingle">
               <img :src="iconReview" class="act_icon" alt="">
               <div class="act_text">写书评</div></div>
-            <div class="actSingle" @click="dialogFormVisible=true">
+            <div class="actSingle" @click="showDialog2">
               <img :src="iconMoment" class="act_icon" alt="">
               <div class="act_text">发动态</div></div>
           </div>
@@ -36,7 +39,6 @@
               ref="upload"
               class="momentUpload"
               action="#"
-
               list-type="picture-card"
               :before-upload="uploadPic"
               :file-list="pic_list"
@@ -91,6 +93,7 @@
 </template>
 
 <script>
+
 export default {
   name: 'Community',
   data: function() {
@@ -105,15 +108,29 @@ export default {
       momentArea: '',
       now_date: '',
       now_time: '',
-      moments: []
+      moments: [],
+      momentsList: [],
+      index: 1,
+      loading: false
     }
   },
   created: function() {
     const that = this
-    axios.post('/api/moment').then(function(res) {
-      console.log(res)
-      that.moments = res.data.moments
-    })
+    const fd = new FormData()
+    fd.append('userId', this.$store.state.user.userInfo.userId)
+    if (this.$store.state.user.token) {
+      axios.post('/api/moment', fd, { headers: { 'token': this.$store.state.user.token }}).then(function(res) {
+        console.log(res)
+        that.moments = res.data.moments
+      })
+    } else {
+      axios.post('/api/moment').then(function(res) {
+        console.log(res)
+        that.moments = res.data.moments
+      })
+      // this.momentsList = this.moments.slice(0, this.index * 10)
+      // console.log(this.momentsList)
+    }
   },
   mounted() {
     window.addEventListener('scroll', this.handleScroll)
@@ -123,7 +140,19 @@ export default {
     window.removeEventListener('scroll', this.handleScroll)
   },
   methods: {
+    // handleReachBottom() {
+    //   return new Promise(resolve => {
+    //     setTimeout(() => {
+    //       const last = this.list1[this.list1.length - 1]
+    //       for (let i = 1; i < 11; i++) {
+    //         this.list1.push(last + i)
+    //       }
+    //       resolve()
+    //     }, 2000)
+    //   })
+    // },
     publishMoment: function() {
+      const that = this
       if (this.momentArea.trim() === '' && this.pic_list.length === 0) {
         this.$message.error({
           message: '请输入动态内容'
@@ -131,7 +160,7 @@ export default {
       } else {
         this.dialogFormVisible = false
         this.getNowTime()
-        const that = this
+        this.momentContent = this.momentArea.replace(/\n|\r\n/g, '<br/>')
         const fd = new FormData()
         fd.append('userId', this.$store.state.user.userInfo.userId)
         console.log(this.pic_list)
@@ -140,24 +169,48 @@ export default {
           fd.append('momentPhoto', this.pic_list[i])
         }
         fd.append('momentPhoto', this.pic_list.length)
-        fd.append('momentContent', this.momentArea)
+        fd.append('momentContent', this.momentContent)
         fd.append('momentTime', this.now_date + this.now_time)
-        console.log(fd.get('momentPhoto'))
         /*global axios*/
         axios.post('/api/write/moment', fd, { headers: {
           'token': that.$store.state.user.token
         }}).then(function(res) {
-          console.log(res)
           that.$message({
             type: 'success',
             message: '发布成功'
           })
         })
       }
+      const nfd = new FormData()
+      nfd.append('userId', this.$store.state.user.userInfo.userId)
+      axios.post('/api/moment', nfd, { headers: { 'token': this.$store.state.user.token }}).then(function(res) {
+        console.log(res)
+        that.moments = res.data.moments
+      })
+    },
+    showDialog2: function() {
+      if (!this.$store.state.user.token) {
+        this.$message.error({
+          message: '请登录后再发表动态'
+        })
+      } else {
+        this.dialogFormVisible = true
+      }
     },
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
       this.dialogVisible = true
+    },
+    load: function() {
+      this.loading = true
+      console.log(this.index)
+      this.momentsList = this.moments.slice(0, this.index * 10)
+      setTimeout(() => {
+        // this.count += 2
+        this.index += 1
+        // console.log(this.index)
+        this.loading = false
+      }, 2000)
     },
     uploadPic: function(file) {
       const isJPEG = file.type === 'image/jpeg'
@@ -285,7 +338,6 @@ box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     width: 32px;
     height: 32px;
 
-    /* float: left; */
 }
 .act_text{
     font-size: 14px;
@@ -315,11 +367,13 @@ box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 ::v-deep .el-upload--picture-card{
   width: 80px;
   height: 80px;
+    object-fit: cover;
   line-height: 86px;
 }
 ::v-deep .el-upload-list--picture-card .el-upload-list__item{
   width: 80px;
   height: 80px;
+  object-fit: cover;
   line-height: 86px;
 }
 ::v-deep .el-textarea__inner{

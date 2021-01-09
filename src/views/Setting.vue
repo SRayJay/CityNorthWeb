@@ -63,7 +63,7 @@
             <div class="mtitle">密码</div>
             <div class="yuan_password">
               <div class="slabel">原密码：</div>
-              <input v-model="this.$store.state.user.userInfo.userPassword" class="password_input" type="password" disabled>
+              <input v-model="originpassword" class="password_input" type="password">
             </div>
             <div class="password">
               <div class="slabel">新密码：</div>
@@ -114,6 +114,7 @@ export default {
       userSex: this.$store.state.user.userInfo.userSex,
       userSelfLable: this.$store.state.user.userInfo.userSelfLable,
       userCity: this.$store.state.user.userInfo.userCity || '',
+      originpassword: '',
       password: '',
       checkPassword: '',
       options: [{
@@ -158,38 +159,45 @@ export default {
   methods: {
     // 上传图片成功的函数，暂时没用到
     handleAvatarSuccess(res, file) {
-      // console.log(res)
-      // console.log(file)
       this.avatarUrl = URL.createObjectURL(file.raw)
-      // console.log(this.avatarUrl)
     },
     checkName() {
-      // chengbei.site/user/modify/checkname
-      const that = this
-      // console.log(this.userName)
-      const fd = new FormData()
-      fd.append('userName', this.userName)
-      /*global axios */
-      axios.post('/api/user/modify/checkname', fd).then(function(res) {
+      const pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]")
+      if (!this.userName) {
+        this.$message.error({ message: '用户名不能为空' })
+        this.nameNoProblem = false
+      } else if (this.userName.length > 10) {
+        this.$message.error({ message: '用户名长度不能多于10位' })
+        this.nameNoProblem = false
+      } else if (pattern.test(this.userName)) {
+        this.$message.error({ message: '用户名不允许有特殊字符' })
+        this.nameNoProblem = false
+      } else {
+        const that = this
+        const fd = new FormData()
+        fd.append('userName', this.userName)
+        /*global axios */
+        axios.post('/api/user/modify/checkname', fd).then(function(res) {
         // console.log(res)
-        if (res.data.message === 200) {
-          that.$message({
-            type: 'success',
-            message: '用户名可用'
-          })
-          that.nameNoProblem = true
-        } else if (res.data.message === 400) {
-          if (that.userName === that.$store.state.user.userInfo.userName) {
-            that.nameNoProblem = true
-          } else {
+          if (res.data.message === 200) {
             that.$message({
-              type: 'error',
-              message: '用户名已存在'
+              type: 'success',
+              message: '用户名可用'
             })
-            that.nameNoProblem = false
+            that.nameNoProblem = true
+          } else if (res.data.message === 400) {
+            if (that.userName === that.$store.state.user.userInfo.userName) {
+              that.nameNoProblem = true
+            } else {
+              that.$message({
+                type: 'error',
+                message: '用户名已存在'
+              })
+              that.nameNoProblem = false
+            }
           }
-        }
-      })
+        })
+      }
     },
     changePassword() {
       if (this.password.length < 6 || this.password.length > 15) {
@@ -199,6 +207,10 @@ export default {
       } else if (this.password !== this.checkPassword) {
         this.$message.error({
           message: '两次密码不一致'
+        })
+      } else if (this.originpassword !== this.$store.state.user.userInfo.userPassword) {
+        this.$message.error({
+          message: '原密码错误'
         })
       } else {
         const that = this
@@ -280,10 +292,24 @@ export default {
           message: '请选择性别'
         })
       } else {
-        this.checkName()
+        // this.checkName()
+        const that = this
+        const fd = new FormData()
+        fd.append('userName', this.userName)
+        axios.post('/api/user/modify/checkname', fd).then(function(res) {
+        // console.log(res)
+          if (res.data.message === 200) {
+            that.nameNoProblem = true
+          } else if (res.data.message === 400) {
+            if (that.userName === that.$store.state.user.userInfo.userName) {
+              that.nameNoProblem = true
+            } else {
+              that.nameNoProblem = false
+            }
+          }
+        })
         if (this.nameNoProblem) {
           const formData = new FormData()
-          const that = this
           formData.append('userId', this.$store.state.user.userInfo.userId)
           if (this.avatarUrl != null) {
             formData.append('userPhoto', this.avatarFileUrl)
@@ -387,6 +413,7 @@ export default {
     margin-left: 100px;
     text-align: left;
 }
+
 .sexBar{
     position: relative;
     /* border:1px solid red; */

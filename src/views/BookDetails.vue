@@ -16,7 +16,7 @@
           <div class="producer">出品方：{{ BookInfo.producerName }}</div>
           <div class="publish_time">出版时间：{{ BookInfo.bookPublishTime }}</div>
           <div class="translator">译者：{{ BookInfo.bookTranslator }}</div>
-          <div class="ISBNcode">ISBN：{{ BookInfo.bookISBNcode }}</div>
+          <!-- <div class="ISBNcode">ISBN：{{ BookInfo.bookISBNcode }}</div> -->
         </div>
         <div class="btnBar">
           <el-tooltip class="item" effect="dark" content="加入想读书单" placement="bottom-start">
@@ -122,7 +122,7 @@ export default {
     return {
       host: this.$host,
       bookid: this.$route.params.bookid,
-      content_haveMore: true,
+      content_haveMore: false,
       author_haveMore: true,
       BookInfo: {
         bookScore: 0
@@ -145,6 +145,7 @@ export default {
   },
   created: function() {
     // const _this = this
+
     new Promise((resolve, reject) => {
       getBookInfo(this.bookid).then((response) => {
         const { data } = response
@@ -161,8 +162,8 @@ export default {
   mounted: function() {
     // console.log(this.$refs.content_text.textContent)
     this.$nextTick(() => {
-      // console.log(this.$refs.content_text.textContent === '')
       setTimeout(() => {
+        console.log('高度' + this.$refs.content_text.offsetHeight)
         this.change_content_haveMore()
         this.change_author_haveMore()
       }, 100)
@@ -171,7 +172,7 @@ export default {
   methods: {
     // 判断当前dom节点应该有多少高度，一行为19px,最多显示十行，若高度多于十行，则显示展开按钮
     change_content_haveMore: function() {
-      if (this.$refs.content_text.offsetHeight > 190) {
+      if (this.$refs.content_text.offsetHeight > 210) {
         this.content_haveMore = true
         return true
       } else {
@@ -180,7 +181,7 @@ export default {
       }
     },
     change_author_haveMore: function() {
-      if (this.$refs.author_text.offsetHeight > 190) {
+      if (this.$refs.author_text.offsetHeight > 210) {
         this.author_haveMore = true
         return true
       } else {
@@ -189,6 +190,7 @@ export default {
       }
     },
     getMore_content: function() {
+      console.log('高度' + this.$refs.content_text.offsetHeight)
       this.content_haveMore = !this.content_haveMore
       console.log('高度' + this.$refs.content_text.offsetHeight)
     },
@@ -359,6 +361,7 @@ export default {
     width: 635px;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-overflow: -o-ellipsis-lastline;
     display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 10;
@@ -373,8 +376,10 @@ export default {
     font-size: 14px;
     margin-top: 15px;
     text-align: left;
+    height: auto;
     text-indent: 2em;
     line-height: 1.5;
+    display: -webkit-box;
   }
   .author_intro{
     position:relative;
@@ -527,8 +532,8 @@ export default {
     width: 120px;
     text-align: left;
     cursor: pointer;
+    margin-top: 5px;
   }
-
   .bookrate{
       width: 284px;
       height: 216px;

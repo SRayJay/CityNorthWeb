@@ -48,10 +48,28 @@ export default {
   },
   methods: {
     search: function() {
-      if (this.$refs.search_word.value.trim() !== '') {
-        this.$router.push('/search')
+      const content = this.$refs.search_word.value.trim()
+      if (content !== '') {
+        this.getNowTime()
+        const fd = new FormData()
+        const that = this
+        fd.append('searchContent', content)
+        fd.append('searchTime', this.getNowTime())
+        /*global axios */
+        if (this.$store.state.user.token) {
+          fd.append('userId', this.$store.state.user.userInfo.userId)
+          axios.post('/api/search', fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
+            console.log(res)
+            that.$router.push({ name: 'SearchResult', params: { 'searchContent': content }, query: { 'result': JSON.stringify(res.data) }})
+          })
+        } else {
+          axios.post('/api/search', fd).then(res => {
+            that.$router.push({ name: 'SearchResult', params: { 'searchContent': content }, query: { 'result': JSON.stringify(res.data) }})
+          })
+        }
       }
     }
+
   }
 
 }
@@ -88,7 +106,7 @@ export default {
     width: 592px;
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.35);
     z-index: 1;
-    cursor: pointer;
+
   }
 
   .search_input{
@@ -126,6 +144,7 @@ export default {
     border: none;
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
+    cursor: pointer;
   }
   #search_icon{
     width: 24px;
@@ -133,6 +152,7 @@ export default {
     position: absolute;
     top:8px;
     left:33px;
+
   }
 
 </style>

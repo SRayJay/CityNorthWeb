@@ -5,18 +5,18 @@ import store from '@/store/index'
 /* global VueRouter */
 Vue.use(VueRouter)
 
-const Home = () => import('@views/Home')
-const Login = () => import('@views/Login')
-const Space = () => import('@views/Space')
-const Setting = () => import('@views/Setting')
-const BookDetails = () => import('@views/BookDetails')
-const ReviewEditPage = () => import('@views/ReviewEditPage')
-const ReviewContentPage = () => import('@views/ReviewContentPage')
-const SpecialColumn = () => import('@views/SpecialColumn')
-const NobelColumn = () => import('@views/NobelColumn')
-const SearchResult = () => import('@views/SearchResult')
-const Community = () => import('@views/Community')
-const SpaceMoments = () => import('@views/SpaceMoments')
+const Home = () => import('@views/Home.vue')
+const Login = () => import('@views/Login.vue')
+const Space = () => import('@views/Space.vue')
+const Setting = () => import('@views/Setting.vue')
+const BookDetails = () => import('@views/BookDetails.vue')
+const ReviewEditPage = () => import('@views/ReviewEditPage.vue')
+const ReviewContentPage = () => import('@views/ReviewContentPage.vue')
+const SpecialColumn = () => import('@views/SpecialColumn.vue')
+const NobelColumn = () => import('@views/NobelColumn.vue')
+const SearchResult = () => import('@views/SearchResult.vue')
+const Community = () => import('@views/Community.vue')
+const SpaceMoments = () => import('@views/SpaceMoments.vue')
 
 const originalPush = VueRouter.prototype.push
 // 修改原型对象中的push方法
@@ -85,7 +85,7 @@ const router = new VueRouter({
       component: NobelColumn
     },
     {
-      path: '/search',
+      path: '/search/:searchContent',
       name: 'SearchResult',
       component: SearchResult
     },

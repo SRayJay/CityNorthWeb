@@ -18,8 +18,8 @@
           <div class="nav">专栏</div></router-link>
       </div>
       <div class="search-bar">
-        <input type="text" placeholder="搜索">
-        <div class="search-icon">
+        <input ref="search_word" type="text" placeholder="搜索" @keyup.enter="search">
+        <div class="search-icon" @click="search">
           <img src="@assets/icon/search.png" alt=""></div>
       </div>
       <div class="person">
@@ -78,6 +78,7 @@ export default {
       return this.$host + this.$store.state.user.userInfo.userPhoto
     }
   },
+
   // created: function() {
   //   console.log(this.$store.state.user.token)
   //   this.$nextTick(() => {
@@ -92,10 +93,33 @@ export default {
       this.$router.push('/')
     },
     toSpace: function() {
-      this.$router.push({ name: 'Space', params: { userid: this.$store.state.user.userInfo['userId'] }})
+      this.$router.push({ name: 'Space', params: { userid: this.$store.state.user.userInfo.userId }})
     },
     toSetting: function() {
-      this.$router.push({ name: 'Setting', params: { userid: this.$store.state.user.userInfo['userId'] }})
+      this.$router.push({ name: 'Setting', params: { userid: this.$store.state.user.userInfo.userId }})
+    },
+    search: function() {
+      const content = this.$refs.search_word.value.trim()
+      if (content !== '') {
+        this.getNowTime()
+        const fd = new FormData()
+        const that = this
+        fd.append('searchContent', content)
+        fd.append('searchTime', this.getNowTime())
+        /*global axios */
+        if (this.$store.state.user.token) {
+          fd.append('userId', this.$store.state.user.userInfo.userId)
+          axios.post('/api/search', fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
+            that.$router.push({ name: 'SearchResult', params: { 'searchContent': content }, query: { 'result': JSON.stringify(res.data) }})
+            that.$refs.search_word.value = ''
+          })
+        } else {
+          axios.post('/api/search', fd).then(res => {
+            that.$router.push({ name: 'SearchResult', params: { 'searchContent': content }, query: { 'result': JSON.stringify(res.data) }})
+            that.$refs.search_word.value = ''
+          })
+        }
+      }
     }
   }
 }

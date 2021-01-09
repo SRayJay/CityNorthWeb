@@ -13,7 +13,7 @@
         <div class="userLabel">{{ userInfo.userSelfLable }}</div>
         <div class="followAndFan">
           <span class="num">{{ userInfo.followNum||0 }}</span>关注 <span class="num">{{ userInfo.fanNum||0 }}</span>被关注</div>
-        <div v-if="this.$route.params.userid!==this.$store.state.user.userInfo.userId.toString()" class="followBtnBar">
+        <div v-if="parseInt(this.$route.params.userid)!==this.$store.state.user.userInfo.userId" class="followBtnBar">
           <img src="@assets/icon/follow.png" class="followBtn" alt="">
           <img src="@assets/icon/sixin.svg" class="sixinBtn" alt="">
         </div>
@@ -22,6 +22,7 @@
         <div class="mtitle">我的动态({{ moments.length }})</div>
         <btn-more class="moreBtn" @toMore="toMoments($route.params.userid)" />
         <single-moment v-if="moments.length>0" :moment-info="moments[moments.length-1]" class="singleReview" />
+        <el-divider />
         <single-moment v-if="moments.length>1" :moment-info="moments[moments.length-2]" class="singleReview" />
       </div>
       <div class="excerptsBar">
@@ -69,6 +70,8 @@ export default {
     }
   },
   created: function() {
+    console.log(parseInt(this.$route.params.userid))
+    console.log(this.$store.state.user.userInfo.userId)
     /*global axios */
     axios.post('/api/user/space/' + this.$route.params.userid).then((res) => {
       this.userInfo = res.data.user
@@ -84,7 +87,6 @@ export default {
   },
   methods: {
     toMoments(userid) {
-      console.log(11)
       this.$router.push({ name: 'SpaceMoments', params: { userid: userid }, query: { userName: this.userInfo.userName }})
     }
   }

@@ -1,6 +1,6 @@
 <template>
-  <div class="content">
-    <img :src="book.bookPhoto" class="bookPhoto" alt="">
+  <div class="content" @click="toBookDetails()">
+    <img :src="$host+book.bookPhotoUrl" class="bookPhoto" alt="">
     <div class="container">
       <div class="bookName">{{ book.bookName }}</div>
       <el-rate
@@ -11,7 +11,7 @@
         text-color="#ff9900"
       />
       <div class="rate_num">{{ book.bookScore.toFixed(1) }}</div>
-      <div class="bookInfo">{{ '['+book.authorCountry+']'+book.authorName+' / '+book.bookTranslator+' / '+book.bookPublisher }}</div>
+      <div class="bookInfo">{{ '['+book.authorCountry+']'+book.authorName+' / '+book.bookTranslator+' / '+book.publisherName }}</div>
     </div>
     <div class="divivder" />
   </div>
@@ -20,18 +20,16 @@
 <script>
 export default {
   name: 'SearchBook',
+  props: {
+    book: {
+      type: Object,
+      default: function() {
+        return {}
+      }
+    }
+  },
   data: function() {
     return {
-      book: {
-        bookPhoto: require('@assets/daofeng.jpg'),
-        bookName: '刀锋',
-        authorName: '毛姆',
-        authorCountry: '英国',
-        bookTranslator: '林步升',
-        bookPublisher: '浙江文艺出版社',
-        bookScore: 9.0
-
-      }
     }
   },
   computed: {
@@ -42,6 +40,11 @@ export default {
       set() {
 
       }
+    }
+  },
+  methods: {
+    toBookDetails: function() {
+      this.$emit('toBookDetails')
     }
   }
 }
@@ -66,6 +69,7 @@ export default {
     margin-left: 20px;
     position: relative;
     float: left;
+    max-width: 300px;
 }
 .rate{
     margin-top: 20px;

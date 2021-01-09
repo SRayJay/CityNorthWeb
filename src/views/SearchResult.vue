@@ -3,26 +3,51 @@
     <Header />
     <div class="wrap">
       <div class="search_back">
-        <input ref="search_word" :value="word" class="search_input" @keyup.enter="search">
+        <input ref="search_word" :value="this.$route.params.searchContent" class="search_input" @keyup.enter="search">
         <div class="right_back" @click="search">
           <img id="search_icon" src="@assets/icon/search.png" alt="">
         </div>
       </div>
       <div class="leftBar">
-        <button class="leftBtn leftBtn_focus">全部</button>
-        <button class="leftBtn leftBtn_nofocus">书籍</button>
-        <button class="leftBtn leftBtn_nofocus">作家</button>
-        <button class="leftBtn leftBtn_nofocus">用户</button>
+        <button class="leftBtn" :class="{leftBtn_focus:nowBar===0,leftBtn_nofocus:nowBar!==0}" @click="focus(0)">全部</button>
+        <button class="leftBtn" :class="{leftBtn_focus:nowBar===1,leftBtn_nofocus:nowBar!==1}" @click="focus(1)">书籍</button>
+        <button class="leftBtn" :class="{leftBtn_focus:nowBar===2,leftBtn_nofocus:nowBar!==2}" @click="focus(2)">作家</button>
+        <button class="leftBtn" :class="{leftBtn_focus:nowBar===3,leftBtn_nofocus:nowBar!==3}" @click="focus(3)">用户</button>
       </div>
       <div class="middleBar">
-        <span class="search_title">搜索{{ word }}</span>
+
+        <span class="search_title">搜索{{ this.$route.params.searchContent }}</span>
         <el-divider class="divider" />
-        <div class="result_title">作家：</div>
-        <search-author class="single" />
-        <div class="result_title">书籍：</div>
-        <search-book class="single" />
-        <search-book class="single" />
-        <search-book class="single" />
+        <div v-if="nowBar===0" ref="middleBar">
+          <div v-if="result.authors.length>0">
+            <div class="result_title">作家：</div>
+            <div v-for="author in result.authors" :key="author.authorId">
+              <search-author :author="author" class="single" @toAuthorDetails="toAuthorDetails(author.authorId)" />
+            </div>
+          </div>
+          <div v-if="result.books.length>0">
+            <div class="result_title">书籍：</div>
+            <div v-for="book in result.books" :key="book.bookId">
+              <search-book :book="book" class="single" @toBookDetails="toBookDetails(book.bookId)" />
+            </div>
+          </div>
+          <div v-if="result.users.length>0" />
+        </div>
+        <div v-else-if="nowBar===1">
+          <div class="result_title">书籍：</div>
+          <div v-for="book in result.books" :key="book.bookId">
+            <search-book :book="book" class="single" @toBookDetails="toBookDetails(book.bookId)" />
+          </div>
+        </div>
+        <div v-else-if="nowBar===2">
+          <div class="result_title">作家：</div>
+          <div v-for="author in result.authors" :key="author.authorId">
+            <search-author :author="author" class="single" @toAuthorDetails="toAuthorDetails(author.authorId)" />
+          </div>
+        </div>
+        <div v-else-if="nowBar===3">
+          <div class="result_title">用户：</div>
+        </div>
       </div>
       <div class="rightBar">
         <span class="label_title">热门标签</span>
@@ -91,14 +116,56 @@ export default {
   name: 'SearchResult',
   data: function() {
     return {
-      word: '毛姆'
+      result: JSON.parse(this.$route.query.result),
+      nowBar: 0
     }
+  },
+
+  watch: {
+    '$route': 'getRouteResult'
+  },
+
+  created: function() {
+    // console.log(this.result)
+    this.result = JSON.parse(this.$route.query.result)
   },
   methods: {
     search: function() {
-      if (this.$refs.search_word.value.trim() !== '') {
-        this.$router.push('/search')
+      const content = this.$refs.search_word.value.trim()
+      // console.log(content)
+      if (content !== '') {
+        this.getNowTime()
+        const fd = new FormData()
+        const that = this
+        fd.append('searchContent', content)
+        fd.append('searchTime', this.getNowTime())
+        /*global axios */
+        if (this.$store.state.user.token) {
+          fd.append('userId', this.$store.state.user.userInfo.userId)
+          axios.post('/api/search', fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
+            console.log(res)
+            that.$router.push({ name: 'SearchResult', params: { 'searchContent': content }, query: { 'result': JSON.stringify(res.data) }})
+            that.result = JSON.parse(that.$route.query.result)
+            // that.word = content
+          })
+        } else {
+          axios.post('/api/search', fd).then(res => {
+            that.$router.push({ name: 'SearchResult', params: { 'searchContent': content }, query: { 'result': JSON.stringify(res.data) }})
+            that.result = JSON.parse(that.$route.query.result)
+            // that.word = content
+          })
+        }
+        // console.log(this.result.authors)
       }
+    },
+    getRouteResult: function() {
+      this.result = JSON.parse(this.$route.query.result)
+    },
+    toBookDetails: function(bookId) {
+      this.$router.push({ name: 'book', params: { bookid: bookId }})
+    },
+    focus: function(id) {
+      this.nowBar = id
     }
   }
 }
@@ -237,6 +304,7 @@ export default {
     margin-left: 40px;
     margin-top: 20px;
     height: 140px;
+    cursor:pointer;
     /* height: 100%; */
   }
   .mtitle{
