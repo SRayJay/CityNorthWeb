@@ -22,7 +22,7 @@
           <img :src="isPoint?likedPic:likePic" class="act_icon my_icon" alt="">
           <div class="like_num">{{ momentLikeNum }}</div></div>
       </div>
-      <div class="act" @click="showComment = !showComment">
+      <div class="act" @click="showCommentBar">
         <div class="actContainer">
           <img src="@assets/icon/comment.png" class="act_icon my_icon" alt="">
           <div class="like_num">{{ momentCommentNum }}</div>
@@ -43,6 +43,9 @@
             <img :src="$host+this.$store.state.user.userInfo.userPhoto" class="commentAvatar" alt="">
             <input v-model="mycomment" type="text" class="commentInput">
             <button class="commentBtn" @click="submitComment">评论</button>
+          </div>
+          <div class="commentAll">
+            <community-single-comment v-for="comment in commentList" :key="comment.recommendId" :comment-info="comment" />
           </div>
         </div>
       </el-collapse-transition>
@@ -76,7 +79,8 @@ export default {
       likedPic: require('@assets/icon/liked.png'),
       isPoint: (this.momentInfo.ispoint === 1),
       showComment: false,
-      mycomment: ''
+      mycomment: '',
+      commentList: this.momentInfo.recommend
     }
   },
   mounted: function() {
@@ -101,6 +105,10 @@ export default {
         this.content_haveMore = false
         return true
       }
+    },
+    showCommentBar: function() {
+      this.showComment = !this.showComment
+      // axios.post('/')
     },
     getMore: function() {
       this.content_haveMore = !this.content_haveMore
@@ -294,7 +302,7 @@ display: inline-block;
   position: relative;
   height: 32px;
   line-height: 32px;
-  width: 100%;
+  width: 625px;
   margin:10px;
   display: inline-block;
 }
@@ -306,7 +314,7 @@ display: inline-block;
 }
 .commentInput{
   /* vertical-align: middle; */
-  width: 489px;
+  width: 500px;
   height: 32px;
   padding: 2px;
   font-size: 13px;
@@ -324,7 +332,7 @@ display: inline-block;
   height: 32px;
   width: 66px;
   position: absolute;
-  right: 20px;
+  right: 0px;
   border: none;
   border-radius: 5px;
   font-size:14px;

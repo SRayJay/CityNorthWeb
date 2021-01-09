@@ -38,6 +38,9 @@
       <div class="bookListBar">
         <div class="mtitle">我的书单</div>
         <btn-more class="moreBtn" />
+        <single-book-list v-if="wantBook.length>0" title="想读" :book-list="wantBook" />
+        <single-book-list v-if="readingBook.length>0" title="在读" :book-list="readingBook" />
+        <single-book-list v-if="haveReadBook.length>0" title="已读" :book-list="haveReadBook" />
       </div>
     </div>
     <footer-line />
@@ -58,7 +61,10 @@ export default {
     return {
       userInfo: this.$store.state.user.userInfo,
       reviews: {},
-      moments: {}
+      moments: {},
+      wantBook: [],
+      readingBook: [],
+      haveReadBook: []
     }
   },
   computed: {
@@ -73,10 +79,13 @@ export default {
     console.log(parseInt(this.$route.params.userid))
     console.log(this.$store.state.user.userInfo.userId)
     /*global axios */
-    axios.post('/api/user/space/' + this.$route.params.userid).then((res) => {
+    axios.post('/api/user/space/' + this.$route.params.userid, { headers: { 'token': this.$store.state.user.token }}).then((res) => {
       this.userInfo = res.data.user
       this.reviews = res.data.reviews
       this.moments = res.data.moments
+      this.wantBook = res.data.wantBook
+      this.readingBook = res.data.readingBook
+      this.haveReadBook = res.data.haveReadBook
       console.log(res)
     }).catch((error) => {
       console.log(error)

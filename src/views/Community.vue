@@ -8,7 +8,7 @@
             <!-- 无限加载没完成 -->
             <div v-for="moment in moments" :key="moment.momentId">
               <community-moment :moment-info="moment" class="singleMoment" />
-              <el-divider />
+              <el-divider class="b_divider" />
             </div>
 
             <p v-if="loading">加载中...</p>
@@ -308,7 +308,7 @@ export default {
   top: 20px;
 box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
-::v-deep .el-divider--horizontal{
+::v-deep .b_divider.el-divider--horizontal{
     margin: 0 0 24px;
 }
 .actionBarContainer{

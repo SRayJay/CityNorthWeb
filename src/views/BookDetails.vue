@@ -20,11 +20,11 @@
         </div>
         <div class="btnBar">
           <el-tooltip class="item" effect="dark" content="加入想读书单" placement="bottom-start">
-            <div class="btnBar_btn">想读</div></el-tooltip>
+            <div class="btnBar_btn" :class="{btnBar_btn_click:BookInfo.iswantRead===1,btnBar_btn_noClick:BookInfo.iswantRead===0}" @click="addWant">想读</div></el-tooltip>
           <el-tooltip class="item" effect="dark" content="加入在读书单" placement="bottom-start">
-            <div class="btnBar_btn">在读</div></el-tooltip>
+            <div class="btnBar_btn" :class="{btnBar_btn_click:BookInfo.isreadIng===1,btnBar_btn_noClick:BookInfo.isreadIng===0}" @click="addReading">在读</div></el-tooltip>
           <el-tooltip class="item" effect="dark" content="加入已读书单" placement="bottom-start">
-            <div class="btnBar_btn">已读</div></el-tooltip>
+            <div class="btnBar_btn" :class="{btnBar_btn_click:BookInfo.ishaveRead===1,btnBar_btn_noClick:BookInfo.ishaveRead===0}" @click="addHaveRead">已读</div></el-tooltip>
         </div>
         <div class="book_intro">
           <div class="subtitle">内容简介</div>
@@ -127,6 +127,7 @@ export default {
       BookInfo: {
         bookScore: 0
       },
+      default: 0,
       like_icon: require('@assets/icon/like.png'),
       relationbook: [],
       show_excerpts: [],
@@ -151,6 +152,7 @@ export default {
         const { data } = response
         console.log(data)
         this.BookInfo = data.book
+        console.log(this.BookInfo)
         this.show_excerpts = data.excerpts
         this.show_reviews = data.review
         this.relationbook = data.relationbook
@@ -226,6 +228,106 @@ export default {
     },
     toReviewContentPage: function(reviewId) {
       this.$router.push({ name: 'ReviewContentPage', params: { reviewid: reviewId }})
+    },
+    addWant: function() {
+      // 没添加想读时
+      if (!this.$store.state.user.token) {
+        this.$message.error({
+          message: '请登录后操作'
+        })
+      } else if (this.$store.state.user.token && this.BookInfo.iswantRead === 0) {
+        const that = this
+        const fd = new FormData()
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('bookId', this.BookInfo.bookId)
+        axios.post('/api/book/addwant', fd, { headers: { 'token': this.$store.state.user.token }}).then(res => {
+          console.log(res)
+          that.BookInfo.iswantRead = 1
+          that.$message({
+            type: 'success',
+            message: '已加入想读书单'
+          })
+        })
+      } else if (this.$store.state.user.token && this.BookInfo.iswantRead === 1) {
+        const that = this
+        const fd = new FormData()
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('bookId', this.BookInfo.bookId)
+        axios.post('/api/book/addwant', fd, { headers: { 'token': this.$store.state.user.token }}).then(res => {
+          console.log(res)
+          that.BookInfo.iswantRead = 0
+          that.$message({
+            type: 'success',
+            message: '已从想读书单移除'
+          })
+        })
+      }
+    },
+    addReading: function() {
+      if (!this.$store.state.user.token) {
+        this.$message.error({
+          message: '请登录后操作'
+        })
+      } else if (this.$store.state.user.token && this.BookInfo.isreadIng === 0) {
+        const that = this
+        const fd = new FormData()
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('bookId', this.BookInfo.bookId)
+        axios.post('/api/book/addreading', fd, { headers: { 'token': this.$store.state.user.token }}).then(res => {
+          console.log(res)
+          that.BookInfo.isreadIng = 1
+          that.$message({
+            type: 'success',
+            message: '已加入在读书单'
+          })
+        })
+      } else if (this.$store.state.user.token && this.BookInfo.isreadIng === 1) {
+        const that = this
+        const fd = new FormData()
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('bookId', this.BookInfo.bookId)
+        axios.post('/api/book/addreading', fd, { headers: { 'token': this.$store.state.user.token }}).then(res => {
+          console.log(res)
+          that.BookInfo.isreadIng = 0
+          that.$message({
+            type: 'success',
+            message: '已从在读书单移除'
+          })
+        })
+      }
+    },
+    addHaveRead: function() {
+      if (!this.$store.state.user.token) {
+        this.$message.error({
+          message: '请登录后操作'
+        })
+      } else if (this.$store.state.user.token && this.BookInfo.ishaveRead === 0) {
+        const that = this
+        const fd = new FormData()
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('bookId', this.BookInfo.bookId)
+        axios.post('/api/book/addhaveread', fd, { headers: { 'token': this.$store.state.user.token }}).then(res => {
+          console.log(res)
+          that.BookInfo.ishaveRead = 1
+          that.$message({
+            type: 'success',
+            message: '已加入已读书单'
+          })
+        })
+      } else if (this.$store.state.user.token && this.BookInfo.ishaveRead === 1) {
+        const that = this
+        const fd = new FormData()
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('bookId', this.BookInfo.bookId)
+        axios.post('/api/book/addhaveread', fd, { headers: { 'token': this.$store.state.user.token }}).then(res => {
+          console.log(res)
+          that.BookInfo.ishaveRead = 0
+          that.$message({
+            type: 'success',
+            message: '已从已读书单移除'
+          })
+        })
+      }
     }
   }
 
@@ -332,10 +434,16 @@ export default {
     margin-right: 20px;
     width: 60px;
     height: 30px;
-    background: rgba(85, 85, 85, 1);
+
     color: #fff;
     font-size: 13px;
     border-radius: 5px;
+  }
+  .btnBar_btn_noClick{
+    background: rgba(85, 85, 85, 1);
+  }
+  .btnBar_btn_click{
+    background: #03B615;
   }
   .book_intro{
     /* //top: 436px; */

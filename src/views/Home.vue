@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { getIndex } from '@/api/public.js'
+// import { getIndex } from '@/api/public.js'
 export default {
   name: 'Home',
   data: function() {
@@ -32,18 +32,11 @@ export default {
     }
   },
   created: function() {
-    return new Promise((resolve, reject) => {
-      getIndex().then(response => {
-        const { data } = response
-        console.log(data)
-        this.hotBook = data.hotBook
-        this.recommendBook = data.recommendBook
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
-    }).catch((error) => {
-      console.log(error)
+    const that = this
+    axios.post('/api/user/index', { headers: { 'token': that.$store.state.user.token }}).then(res => {
+      console.log(res)
+      this.hotBook = res.data.hotBook
+      this.recommendBook = res.data.recommendBook
     })
   },
   methods: {
