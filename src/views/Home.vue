@@ -35,8 +35,8 @@ export default {
     const that = this
     axios.post('/api/user/index', { headers: { 'token': that.$store.state.user.token }}).then(res => {
       console.log(res)
-      this.hotBook = res.data.hotBook
-      this.recommendBook = res.data.recommendBook
+      that.hotBook = res.data.hotBook
+      that.recommendBook = res.data.recommendBook
     })
   },
   methods: {

@@ -65,9 +65,7 @@ export default {
       gaveRate: 0,
       reviewTitle: '',
       editor: null,
-      info_: null,
-      now_date: '',
-      now_time: ''
+      info_: null
     }
   },
 
@@ -115,17 +113,17 @@ export default {
     },
     postReview() {
       this.showSubmitDaialog = false
-      this.getNowTime()
+
+      const fd = new FormData()
+      fd.append('userId', this.$store.state.user.userInfo.userId)
+      fd.append('bookId', this.bookInfo.bookId)
+      fd.append('reviewContent', this.editor.txt.html())
+      fd.append('reviewTime', this.getNowTime())
+      fd.append('reviewText', xss(this.editor.txt.text()))
+      fd.append('reviewTitle', this.reviewTitle)
+      fd.append('gaveScore', this.gaveRate * 2)
       axios.post(
-        '/api/write/review', {
-          userId: this.$store.state.user.userInfo.userId,
-          bookId: this.bookInfo.bookId,
-          reviewContent: this.editor.txt.html(),
-          reviewText: xss(this.editor.txt.text()),
-          reviewTime: this.now_date + this.now_time,
-          reviewTitle: this.reviewTitle,
-          gaveScore: this.gaveRate * 2
-        }
+        '/api/write/review', fd, { headers: { 'token': this.$store.state.user.token }}
       ).then((res) => {
         console.log(res)
         this.$message({
@@ -136,20 +134,6 @@ export default {
       }).catch((error) => {
         console.log(error)
       })
-    },
-    getNowTime() {
-      const date_ = new Date()
-      const Y = date_.getFullYear()
-      const M = date_.getMonth() + 1
-      const D = date_.getDate()
-      let H = date_.getHours()
-      let Min = date_.getMinutes()
-      let S = date_.getSeconds()
-      H = H < 10 ? '0' + H : H
-      Min = Min < 10 ? '0' + Min : Min
-      S = S < 10 ? '0' + S : S
-      this.now_date = Y + '年' + M + '月' + D + '日 '
-      this.now_time = H + ':' + Min + ':' + S
     },
     seteditor() {
       this.editor = new E(this.$refs.toolbar, this.$refs.editor)

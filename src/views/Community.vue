@@ -58,7 +58,7 @@
                     <i class="el-icon-zoom-in" />
                   </span>
                   <span
-                    v-if="!disabled"
+
                     class="el-upload-list__item-delete"
                     @click="handleRemove(file)"
                   >
@@ -396,7 +396,7 @@ box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   font-size: 14px;
 
 }
-.singleMoment{
+/* .singleMoment{
 
-}
+} */
 </style>

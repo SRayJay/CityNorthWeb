@@ -40,7 +40,7 @@
         </div>
         <div class="excerpts">
           <div class="subtitle">书摘</div>
-          <div class="write_excerpts"><i class="el-icon-edit small-icon" /><span> 写书摘</span></div>
+          <div class="write_excerpts" @click="toWriteExcerpt"><i class="el-icon-edit small-icon" /><span> 写书摘</span></div>
           <div class="cutline" />
           <div v-for="excerpts in show_excerpts " :key="excerpts.excerptsId" class="excerpts_single">
             <div class="excerpts_content">{{ excerpts.excerptsContent }}</div>
@@ -94,7 +94,7 @@
       <div class="relatedbooks">
         <div class="mtitle">相关书籍</div>
         <div class="booklist">
-          <div v-for="(book,index) in relationbook.slice(0,5)" :key="index" class="book_single">
+          <div v-for="(book,index) in relationbook.slice(0,5)" :key="index" class="book_single" @click="toBookDetails(book.bookId)">
             <img :src="host+book.bookPhotoUrl" class="related_pic">
             <span class="related_title">{{ book.bookName }}</span>
             <div class="related_author">{{ book.authorName }}</div>
@@ -114,7 +114,7 @@
 </template>
 
 <script>
-import { getBookInfo } from '@/api/book.js'
+// import { getBookInfo } from '@/api/book.js'
 export default {
   name: 'Book',
 
@@ -123,7 +123,7 @@ export default {
       host: this.$host,
       bookid: this.$route.params.bookid,
       content_haveMore: false,
-      author_haveMore: true,
+      author_haveMore: false,
       BookInfo: {
         bookScore: 0
       },
@@ -144,22 +144,34 @@ export default {
       }
     }
   },
+  watch: {
+    '$route': 'getRouteResult'
+  },
   created: function() {
-    // const _this = this
-
-    new Promise((resolve, reject) => {
-      getBookInfo(this.bookid).then((response) => {
-        const { data } = response
+    const that = this
+    const fd = new FormData()
+    if (this.$store.state.user.token) {
+      fd.append('userId', that.$store.state.user.userInfo.userId)
+      axios.post('/api/book/' + that.bookid, fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
+        const { data } = res
         console.log(data)
         this.BookInfo = data.book
         console.log(this.BookInfo)
         this.show_excerpts = data.excerpts
         this.show_reviews = data.review
         this.relationbook = data.relationbook
-      }).catch(error => {
-        reject(error)
       })
-    })
+    } else {
+      axios.post('/api/book/' + that.bookid).then(res => {
+        const { data } = res
+        console.log(data)
+        this.BookInfo = data.book
+        console.log(this.BookInfo)
+        this.show_excerpts = data.excerpts
+        this.show_reviews = data.review
+        this.relationbook = data.relationbook
+      })
+    }
   },
   mounted: function() {
     // console.log(this.$refs.content_text.textContent)
@@ -172,6 +184,33 @@ export default {
     })
   },
   methods: {
+    getRouteResult: function() {
+      const that = this
+      const fd = new FormData()
+      if (this.$store.state.user.token) {
+        fd.append('userId', that.$store.state.user.userInfo.userId)
+        axios.post('/api/book/' + that.bookid, fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
+          const { data } = res
+          console.log(data)
+          this.BookInfo = data.book
+          console.log(this.BookInfo)
+          this.show_excerpts = data.excerpts
+          this.show_reviews = data.review
+          this.relationbook = data.relationbook
+        })
+      } else {
+        axios.post('/api/book/' + that.bookid).then(res => {
+          const { data } = res
+          console.log(data)
+          this.BookInfo = data.book
+          console.log(this.BookInfo)
+          this.show_excerpts = data.excerpts
+          this.show_reviews = data.review
+          this.relationbook = data.relationbook
+        })
+      }
+    },
+
     // 判断当前dom节点应该有多少高度，一行为19px,最多显示十行，若高度多于十行，则显示展开按钮
     change_content_haveMore: function() {
       if (this.$refs.content_text.offsetHeight > 210) {
@@ -210,7 +249,7 @@ export default {
         fd.append('userId', this.$store.state.user.userInfo.userId)
         fd.append('bookId', this.bookid)
         /*global axios */
-        axios.post('/api/write/review/check', fd).then(function(res) {
+        axios.post('/api/write/review/check', fd, { headers: { 'token': that.$store.state.user.token }}).then(function(res) {
           console.log(res)
           if (res.data.message === 422) {
             that.$message({
@@ -219,9 +258,19 @@ export default {
             })
             that.$router.push({ name: 'ReviewContentPage', params: { reviewid: res.data.reviewId }})
           } else {
-            that.$router.push({ name: 'ReviewEditPage', query: { bookInfo: JSON.stringify(this.BookInfo) }})
+            that.$router.push({ name: 'ReviewEditPage', query: { bookInfo: JSON.stringify(that.BookInfo) }})
           }
         })
+      } else {
+        this.$message.error('当前未登录，请登录后操作')
+      }
+    },
+    toWriteExcerpt: function() {
+      if (this.$store.state.user.token) {
+        const fd = new FormData()
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('bookId', this.bookid)
+        this.$router.push({ name: 'ExcerptEditPage', query: { bookInfo: JSON.stringify(this.BookInfo) }})
       } else {
         this.$message.error('当前未登录，请登录后操作')
       }
@@ -247,6 +296,8 @@ export default {
             type: 'success',
             message: '已加入想读书单'
           })
+          that.BookInfo.isreadIng = 0
+          that.BookInfo.ishaveRead = 0
         })
       } else if (this.$store.state.user.token && this.BookInfo.iswantRead === 1) {
         const that = this
@@ -280,6 +331,8 @@ export default {
             type: 'success',
             message: '已加入在读书单'
           })
+          that.BookInfo.iswantRead = 0
+          that.BookInfo.ishaveRead = 0
         })
       } else if (this.$store.state.user.token && this.BookInfo.isreadIng === 1) {
         const that = this
@@ -313,6 +366,8 @@ export default {
             type: 'success',
             message: '已加入已读书单'
           })
+          that.BookInfo.isreadIng = 0
+          that.BookInfo.iswantRead = 0
         })
       } else if (this.$store.state.user.token && this.BookInfo.ishaveRead === 1) {
         const that = this
@@ -328,6 +383,10 @@ export default {
           })
         })
       }
+    },
+    toBookDetails(bookId) {
+      this.bookid = bookId
+      this.$router.push({ name: 'book', params: { bookid: bookId }})
     }
   }
 
@@ -538,6 +597,7 @@ export default {
   .write_excerpts{
     background: #fff;
     position: absolute;
+    cursor: pointer;
     top: 0px;
     left: 550px;
     border-radius: 8px;
@@ -701,6 +761,7 @@ export default {
     height: 140px;
     width: 230px;
     position: relative;
+    cursor: pointer;
   }
   .related_pic{
     width: 86px;

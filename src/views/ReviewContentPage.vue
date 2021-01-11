@@ -94,6 +94,7 @@ export default {
   width:1024px;
   margin:0 auto;
   position:relative;
+  min-height: 600px;
   /* min-height: 2000px; */
   padding-bottom: 30px;
 }

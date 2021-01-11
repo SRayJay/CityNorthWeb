@@ -22,7 +22,7 @@
           <div v-if="result.authors.length>0">
             <div class="result_title">作家：</div>
             <div v-for="author in result.authors" :key="author.authorId">
-              <search-author :author="author" class="single" @toAuthorDetails="toAuthorDetails(author.authorId)" />
+              <search-author :author="author" class="singleAuthor" @toAuthorDetails="toAuthorDetails(author.authorId)" />
             </div>
           </div>
           <div v-if="result.books.length>0">
@@ -31,22 +31,42 @@
               <search-book :book="book" class="single" @toBookDetails="toBookDetails(book.bookId)" />
             </div>
           </div>
-          <div v-if="result.users.length>0" />
+          <div v-if="result.users.length>0">
+            <div class="result_title">用户：</div>
+            <div v-for="user in result.users" :key="user.userId">
+              <search-user :user="user" class="singleUser" @toUserSpace="toUserSpace(user.userId)" />
+            </div>
+          </div>
+          <div v-if="result.authors.length===0&&result.books.length===0&&result.users.length===0">
+            没有搜索到结果
+          </div>
         </div>
         <div v-else-if="nowBar===1">
           <div class="result_title">书籍：</div>
+          <div v-if="result.books.length===0">
+            没有搜索到结果
+          </div>
           <div v-for="book in result.books" :key="book.bookId">
             <search-book :book="book" class="single" @toBookDetails="toBookDetails(book.bookId)" />
           </div>
         </div>
         <div v-else-if="nowBar===2">
           <div class="result_title">作家：</div>
+          <div v-if="result.authors.length===0">
+            没有搜索到结果
+          </div>
           <div v-for="author in result.authors" :key="author.authorId">
-            <search-author :author="author" class="single" @toAuthorDetails="toAuthorDetails(author.authorId)" />
+            <search-author :author="author" class="singleAuthor" @toAuthorDetails="toAuthorDetails(author.authorId)" />
           </div>
         </div>
         <div v-else-if="nowBar===3">
           <div class="result_title">用户：</div>
+          <div v-if="result.users.length===0">
+            没有搜索到结果
+          </div>
+          <div v-for="user in result.users" :key="user.userId">
+            <search-user :user="user" class="singleUser" @toUserSpace="toUserSpace(user.userId)" />
+          </div>
         </div>
       </div>
       <div class="rightBar">
@@ -163,6 +183,12 @@ export default {
     },
     toBookDetails: function(bookId) {
       this.$router.push({ name: 'book', params: { bookid: bookId }})
+    },
+    toUserSpace: function(userId) {
+      this.$router.push({ name: 'Space', params: { userid: userId }})
+    },
+    toAuthorDetails: function(authorId) {
+      this.$router.push({ name: 'author', params: { authorid: authorId }})
     },
     focus: function(id) {
       this.nowBar = id
@@ -295,6 +321,7 @@ export default {
   }
   .result_title{
     text-align: left;
+    margin-top: 20px;
     font-size: 18px;
     font-weight: 700;
     margin-bottom: 20px;
@@ -306,6 +333,18 @@ export default {
     height: 140px;
     cursor:pointer;
     /* height: 100%; */
+  }
+  .singleAuthor{
+    margin-left: 40px;
+    margin-top: 20px;
+    height: 120px;
+    cursor:pointer;
+  }
+  .singleUser{
+    margin-left: 40px;
+    margin-top: 20px;
+    height: 86px;
+    cursor:pointer;
   }
   .mtitle{
    color: #333;
@@ -333,10 +372,11 @@ export default {
     height: 88px;
   }
   .moreBtn{
-    text-align: right;
+    /* text-align: right; */
     /* float:right; */
     /* position: absolute;
     right: 0px; */
+    margin-left: 136px;
   }
   .footer{
     position: relative;

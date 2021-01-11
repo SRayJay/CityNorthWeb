@@ -8,8 +8,10 @@ Vue.use(VueRouter)
 const Home = () => import('@views/Home.vue')
 const Login = () => import('@views/Login.vue')
 const Space = () => import('@views/Space.vue')
+const MySpace = () => import('@views/MySpace.vue')
 const Setting = () => import('@views/Setting.vue')
 const BookDetails = () => import('@views/BookDetails.vue')
+const AuthorDetails = () => import('@views/AuthorDetails.vue')
 const ReviewEditPage = () => import('@views/ReviewEditPage.vue')
 const ReviewContentPage = () => import('@views/ReviewContentPage.vue')
 const SpecialColumn = () => import('@views/SpecialColumn.vue')
@@ -17,6 +19,9 @@ const NobelColumn = () => import('@views/NobelColumn.vue')
 const SearchResult = () => import('@views/SearchResult.vue')
 const Community = () => import('@views/Community.vue')
 const SpaceMoments = () => import('@views/SpaceMoments.vue')
+const SpaceBookLists = () => import('@views/SpaceBookLists.vue')
+const SpaceReviews = () => import('@views/SpaceReviews.vue')
+const Category = () => import('@views/Category.vue')
 
 const originalPush = VueRouter.prototype.push
 // 修改原型对象中的push方法
@@ -37,6 +42,12 @@ const router = new VueRouter({
       component: Login
     },
     {
+      path: '/myspace',
+      name: 'MySpace',
+      component: MySpace,
+      meta: { requireAuth: true }
+    },
+    {
       path: '/space/:userid',
       name: 'Space',
       component: Space
@@ -47,6 +58,16 @@ const router = new VueRouter({
       component: SpaceMoments
     },
     {
+      path: '/space/:userid/booklist',
+      name: 'SpaceBookLists',
+      component: SpaceBookLists
+    },
+    {
+      path: '/space/:userid/reviews',
+      name: 'SpaceReviews',
+      component: SpaceReviews
+    },
+    {
       path: '/space/:userid/setting',
       name: 'Setting',
       component: Setting,
@@ -55,10 +76,19 @@ const router = new VueRouter({
       }
     },
     {
+      path: '/category',
+      name: 'Category',
+      component: Category
+    },
+    {
       path: '/book/:bookid',
       name: 'book',
       component: BookDetails
-      // component: (resolve) => require([BookDetails])
+    },
+    {
+      path: '/author/:authorid',
+      name: 'author',
+      component: AuthorDetails
     },
     {
       path: '/reviewedit',

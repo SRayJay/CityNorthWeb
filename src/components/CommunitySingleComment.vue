@@ -30,8 +30,10 @@ export default {
       }
     }
   },
-  data: () => {
-    return
+  data: function() {
+    return {
+
+    }
   },
   created: function() {
 

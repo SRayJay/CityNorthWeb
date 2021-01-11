@@ -1,6 +1,6 @@
 <template>
-  <div class="content">
-    <img :src="$host+author.authorPhoto" alt="" class="authorPhoto">
+  <div class="content" @click="toAuthorDetails">
+    <img :src="authorPic" alt="" class="authorPhoto">
     <div class="container">
       <div class="authorName">{{ author.authorName }}</div>
       <div class="authorCountry">{{ author.authorCountry }}</div>
@@ -22,12 +22,22 @@ export default {
   },
   data: function() {
     return {
-      // author: {
-      //   authorPhoto: require('@assets/gelike.jpg'),
-      //   authorName: '露易丝·格丽克',
-      //   authorCountry: '美国',
-      //   authorBirth: '1943年4月7日'
-      // }
+    }
+  },
+  computed: {
+    authorPic: {
+      get() {
+        if (this.author.authorPhoto) {
+          return this.$host + this.author.authorPhoto
+        } else {
+          return require('@assets/icon/author_nopic.png')
+        }
+      }
+    }
+  },
+  methods: {
+    toAuthorDetails: function() {
+      this.$emit('toAuthorDetails')
     }
   }
 }
@@ -35,9 +45,14 @@ export default {
 
 <style scoped>
 .content{
+  transition: all 0.4s;
   width: 100%;
-  height: 130px;
+  height: 120px;
   margin-bottom: 15px;
+}
+.content:hover{
+  background: #eee;
+  opacity: 0.6;
 }
 
 .authorPhoto{

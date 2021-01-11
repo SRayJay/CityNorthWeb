@@ -13,7 +13,8 @@
         <router-link to="/community">
           <div class="nav">社区</div></router-link>
         <div class="nav">排行榜</div>
-        <div class="nav">分类</div>
+        <router-link to="/category">
+          <div class="nav">分类</div></router-link>
         <router-link to="/columns">
           <div class="nav">专栏</div></router-link>
       </div>
@@ -34,9 +35,9 @@
               />
             </div>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item><div @click="toSpace">个人主页</div></el-dropdown-item>
+              <el-dropdown-item><div @click="toMySpace">个人主页</div></el-dropdown-item>
               <el-dropdown-item>消息中心</el-dropdown-item>
-              <el-dropdown-item>我的书单</el-dropdown-item>
+              <el-dropdown-item><div @click="toBookLists">我的书单</div></el-dropdown-item>
               <el-dropdown-item>我的收藏</el-dropdown-item>
               <el-dropdown-item>
                 <div @click="toSetting">设置中心</div></el-dropdown-item>
@@ -78,25 +79,19 @@ export default {
       return this.$host + this.$store.state.user.userInfo.userPhoto
     }
   },
-
-  // created: function() {
-  //   console.log(this.$store.state.user.token)
-  //   this.$nextTick(() => {
-  //     if (this.$store.state.user.token) {
-  //       this.isLogin = true
-  //     }
-  //   })
-  // },
   methods: {
     logout: function() {
       this.$store.commit('user/REMOVE_TOKEN')
       this.$router.push('/')
     },
-    toSpace: function() {
-      this.$router.push({ name: 'Space', params: { userid: this.$store.state.user.userInfo.userId }})
+    toMySpace: function() {
+      this.$router.push({ name: 'MySpace' })
     },
     toSetting: function() {
       this.$router.push({ name: 'Setting', params: { userid: this.$store.state.user.userInfo.userId }})
+    },
+    toBookLists() {
+      this.$router.push({ name: 'SpaceBookLists', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.$store.state.user.userInfo.userName }})
     },
     search: function() {
       const content = this.$refs.search_word.value.trim()

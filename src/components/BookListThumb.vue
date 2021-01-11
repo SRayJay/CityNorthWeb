@@ -9,9 +9,9 @@
     trigger="hover"
     :content="bookIntro"
   >
-
     <div slot="reference" class="book_card" @click="toBookDetails">
-      <img v-if="!notBook" :src="this.$host+bookPic" alt="" class="pic">
+      <img v-if="shadeBook" class="overPic" src="@assets/icon/more.png" alt="">
+      <img :src="this.$host+bookPic" alt="" class="pic">
 
       <div class="bookname">{{ bookTitle }}</div>
     </div>
@@ -41,7 +41,7 @@ export default {
       type: Number,
       default: 0
     },
-    'notBook': {
+    'shadeBook': {
       type: Boolean,
       default: false
     }
@@ -81,6 +81,13 @@ export default {
         border-top-left-radius: 5px;
         border-top-right-radius: 5px;
         border: none;
+    }
+    .overPic{
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+
     }
     /* .noPic{
         background: #fff;

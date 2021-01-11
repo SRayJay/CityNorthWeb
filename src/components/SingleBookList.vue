@@ -5,7 +5,7 @@
     </div>
     <div v-if="bookList.length>0" style="margin-left:53px;height:200px;">
       <book-list-thumb
-        v-for="book in bookList"
+        v-for="book in bookList.slice(0,5)"
         :key="book.bookId"
         :book-title="book.bookName"
         :book-pic="book.bookPhotoUrl"
@@ -13,6 +13,17 @@
         :book-intro="book.bookIntroduce"
         :book-id="book.bookId"
         class="bookthumb_list"
+      />
+      <book-list-thumb
+        v-if="bookList.length>5"
+        :key="bookList[5].bookId"
+        shade-book="true"
+        :book-title="bookList[5].bookName"
+        :book-pic="bookList[5].bookPhotoUrl"
+        :book-author="bookList[5].authorName"
+        :book-intro="bookList[5].bookIntroduce"
+        :book-id="bookList[5].bookId"
+        class="bookthumb_list shadeBook"
       />
     </div>
   </div>
@@ -56,10 +67,15 @@ export default {
   margin-left: 5px;
   line-height: 200px;
   float: left;
-  /* text-align: left; */
 }
 .bookthumb_list{
   float: left;
-  /* margin-left: 35px; */
+
+}
+.shadeBook{
+  opacity: 0.48;
+}
+.overPic{
+  z-index: 999;
 }
 </style>

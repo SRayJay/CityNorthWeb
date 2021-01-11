@@ -1,7 +1,11 @@
 <template>
   <div class="l_wrap">
-    <img :src="this.$host+pic" class="bookPic" alt="">
-    <div class="reviewTitle">{{ reviewTitle }}</div>
+    <img :src="this.$host+pic" class="bookPic" alt="" @click="toReviewContent">
+    <div class="reviewTitle" @click="toReviewContent">{{ reviewTitle }}</div>
+    <div class="actionBar">
+      <img src="@assets/icon/like.png" class="like_icon" alt="">
+      {{ pointNum }}
+    </div>
     <div class="lBar">
       <div class="bookName">《{{ bookName }}》</div>
       <el-rate
@@ -11,8 +15,24 @@
         :max="5"
         text-color="#ff9900"
       />
+
     </div>
-    <div class="reviewText">{{ reviewText }}</div>
+    <div class="reviewText" @click="toReviewContent">{{ reviewText }}</div>
+    <div v-if="owner" class="deleteBar">
+      <i class="el-icon-delete-solid" alt="删除" @click="showDeleteDialog" />
+    </div>
+    <el-dialog
+      title="提示"
+      :visible.sync="deleteVisible"
+      width="13%"
+      :before-close="handleClose"
+    >
+      <span>确定要删除吗</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="deleteVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="deleteReview">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -25,6 +45,10 @@ export default {
       default: function() {
         return {}
       }
+    },
+    'owner': {
+      type: Boolean,
+      default: false
     }
   },
   data: function() {
@@ -33,13 +57,31 @@ export default {
       reviewTitle: this.reviewInfo.reviewTitle,
       bookName: this.reviewInfo.bookName,
       bookRate: 9.0,
-      reviewText: this.reviewInfo.reviewText
-
+      reviewText: this.reviewInfo.reviewText,
+      pointNum: this.reviewInfo.pointNum,
+      deleteVisible: false
     }
   },
   methods: {
     halfrate: function(rate) {
       return rate / 2
+    },
+    toReviewContent: function() {
+      this.$router.push({ name: 'ReviewContentPage', params: { reviewid: this.reviewInfo.reviewId }})
+    },
+    showDeleteDialog: function() {
+      this.deleteVisible = true
+    },
+    deleteReview: function() {
+      /*global axios */
+      const fd = new FormData()
+      const that = this
+      fd.append('reviewId', this.reviewInfo.reviewId)
+      axios.post('/api/user/delete/review', fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
+        console.log(res)
+        that.deleteVisible = false
+        that.$emit('delete', that.reviewInfo.reviewId)
+      })
     }
   }
 }
@@ -48,7 +90,7 @@ export default {
 <style scoped>
 .l_wrap{
   position: relative;
-  width: 950px;
+  width: 1024px;
   height: 170px;
   /* margin-left: 20px; */
 }
@@ -57,6 +99,7 @@ export default {
   left: 0;
   width: 110px;
   height: 151px;
+  cursor: pointer;
 }
 .reviewTitle{
   position: absolute;
@@ -64,6 +107,7 @@ export default {
   color:#0171b0;
   font-size: 18px;
   top: 0px;
+  cursor: pointer;
 }
 .lBar{
   position: absolute;
@@ -97,6 +141,22 @@ export default {
   letter-spacing:normal;
   text-align: left;
   font-size: 14px;
+  cursor: pointer;
 }
-
+.actionBar{
+  position: absolute;
+  right: 50px;
+}
+.like_icon{
+  width: 16px;
+  height: 16px;
+  vertical-align: top;
+}
+.deleteBar{
+  cursor: pointer;
+  position: absolute;
+  right: 50px;
+  color: #7f7f7f;
+  bottom: 0;
+}
 </style>

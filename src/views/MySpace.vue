@@ -13,34 +13,30 @@
         <div class="userLabel">{{ userInfo.userSelfLable }}</div>
         <div class="followAndFan">
           <span class="num">{{ userInfo.userFollowNum||0 }}</span>关注 <span class="num">{{ userInfo.userFanNum||0 }}</span>被关注</div>
-        <div v-if="parseInt(this.$route.params.userid)!==nowUserId" class="followBtnBar">
-          <img :src="followPic" class="followBtn" alt="" @click="follow">
-          <img src="@assets/icon/sixin.svg" class="sixinBtn" alt="">
-        </div>
       </div>
       <div class="momentBar">
-        <div class="mtitle">{{ rencheng }}的动态({{ moments.length }})</div>
-        <btn-more class="moreBtn" @toMore="toMoments($route.params.userid)" />
+        <div class="mtitle">我的动态({{ moments.length }})</div>
+        <btn-more class="moreBtn" @toMore="toMoments" />
         <single-moment v-if="moments.length>0" :moment-info="moments[moments.length-1]" class="singleReview" />
         <el-divider v-if="moments.length>1" />
         <single-moment v-if="moments.length>1" :moment-info="moments[moments.length-2]" class="singleReview" />
       </div>
       <div class="excerptsBar">
-        <div class="mtitle">{{ rencheng }}的书摘</div>
+        <div class="mtitle">我的书摘</div>
         <btn-more class="moreBtn" />
       </div>
       <div class="reviewBar">
-        <div class="mtitle">{{ rencheng }}的书评({{ reviews.length }})</div>
+        <div class="mtitle">我的书评({{ reviews.length }})</div>
         <btn-more class="moreBtn" @toMore="toReviews" />
         <single-review v-if="reviews.length>0" :review-info="reviews[reviews.length-1]" class="singleReview" />
         <single-review v-if="reviews.length>1" :review-info="reviews[reviews.length-2]" class="singleReview" />
       </div>
       <div class="bookListBar">
-        <div class="mtitle">{{ rencheng }}的书单</div>
+        <div class="mtitle">我的书单</div>
         <btn-more class="moreBtn" @toMore="toBookLists" />
-        <single-book-list v-if="wantBook.length>0" title="想读" :book-list="wantBook" />
-        <single-book-list v-if="readingBook.length>0" title="在读" :book-list="readingBook" />
-        <single-book-list v-if="haveReadBook.length>0" title="已读" :book-list="haveReadBook" />
+        <single-book-list v-if="wantBook.length>0" title="想读" :book-list="wantBook.slice(0,6)" />
+        <single-book-list v-if="readingBook.length>0" title="在读" :book-list="readingBook.slice(0,6)" />
+        <single-book-list v-if="haveReadBook.length>0" title="已读" :book-list="haveReadBook.slice(0,6)" />
       </div>
     </div>
     <footer-line />
@@ -49,20 +45,16 @@
 </template>
 
 <script>
-/*global axios */
 export default {
   name: 'Space',
   data: function() {
     return {
-      userInfo: {},
+      userInfo: this.$store.state.user.userInfo || {},
       reviews: {},
       moments: {},
       wantBook: [],
       readingBook: [],
-      haveReadBook: [],
-      nowUserId: (this.$store.state.user.token) ? this.$store.state.user.userInfo.userId : 0,
-      isFollow: 0
-
+      haveReadBook: []
     }
   },
   computed: {
@@ -71,104 +63,37 @@ export default {
     },
     userAvatar: function() {
       return this.$host + this.userInfo.userPhoto || ''
-    },
-    rencheng: function() {
-      if (this.$route.params.userid === this.nowUserId) {
-        return '我'
-      } else {
-        return 'TA'
-      }
-    },
-    // TODO
-    followPic: function() {
-      if (this.nowUserId === 0) {
-        return require('@assets/icon/follow.png')
-      } else if (this.isFollow === 0) {
-        return require('@assets/icon/follow.png')
-      } else {
-        return require('@assets/icon/followed.png')
-      }
     }
   },
   created: function() {
-    const fd = new FormData()
-    const that = this
-    fd.append('visitId', this.$route.params.userid)
-    if (this.$store.state.user.token) {
-      fd.append('userId', this.$store.state.user.userInfo.userId)
-      axios.post('/api/user/space/' + this.$route.params.userid, fd, { headers: { 'token': that.$store.state.user.token }}).then((res) => {
-        that.userInfo = res.data.user
-        that.reviews = res.data.reviews
-        that.moments = res.data.moments
-        that.isFollow = res.data.isFollow
-        that.wantBook = res.data.wantBook
-        that.readingBook = res.data.readingBook
-        that.haveReadBook = res.data.haveReadBook
-        console.log(res)
-      }).catch((error) => {
-        console.log(error)
-      })
-    } else {
-      axios.post('/api/user/space/' + this.$route.params.userid, fd).then((res) => {
-        that.userInfo = res.data.user
-        that.reviews = res.data.reviews
-        that.moments = res.data.moments
-        that.isFollow = res.data.isFollow
-        that.wantBook = res.data.wantBook
-        that.readingBook = res.data.readingBook
-        that.haveReadBook = res.data.haveReadBook
-        console.log(res)
-      }).catch((error) => {
-        console.log(error)
-      })
-    }
+    /*global axios */
+    axios.post('/api/user/space/' + this.$store.state.user.userInfo.userId, { headers: { 'token': this.$store.state.user.token }}).then((res) => {
+      this.userInfo = res.data.user
+      this.reviews = res.data.reviews
+      this.moments = res.data.moments
+      this.wantBook = res.data.wantBook
+      this.readingBook = res.data.readingBook
+      this.haveReadBook = res.data.haveReadBook
+      console.log(res)
+    }).catch((error) => {
+      console.log(error)
+    })
   },
   mounted: function() {
     // console.log(this.userInfo)
   },
   methods: {
-
-    toBookLists() {
-      this.$router.push({ name: 'SpaceBookLists', params: { userid: this.$route.params.userid }, query: { userName: this.userInfo.userName }})
+    toMoments() {
+      this.$router.push({ name: 'SpaceMoments', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.userInfo.userName }})
     },
-    toMoments(userid) {
-      this.$router.push({ name: 'SpaceMoments', params: { userid: userid }, query: { userName: this.userInfo.userName }})
+    toBookLists() {
+      this.$router.push({ name: 'SpaceBookLists', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.userInfo.userName }})
     },
     toReviews() {
-      this.$router.push({ name: 'SpaceReviews', params: { userid: this.$route.params.userid }, query: { userName: this.userInfo.userName }})
-    },
-    follow() {
-      if (!this.$store.state.user.token) {
-        this.$message.error({ message: '请登录后操作' })
-      } else {
-        const fd = new FormData()
-        const that = this
-        fd.append('userId', this.$store.state.user.userInfo.userId)
-        fd.append('starId', parseInt(this.$route.params.userid))
-        console.log('userId:' + fd.get('userId'))
-        console.log('starId:' + fd.get('starId'))
-        console.log(this.$store.state.user.token)
-        axios.post('/api/social/addpoint', fd, { headers: { 'token': this.$store.state.user.token }}).then(res => {
-          console.log(res)
-          if (that.isFollow === 0) {
-            that.$message({
-              type: 'success',
-              message: '关注成功'
-            })
-            that.isFollow = 1
-            that.userInfo.userFanNum += 1
-          } else {
-            that.$message({
-              type: 'warning',
-              message: '取消关注'
-            })
-            that.isFollow = 0
-            that.userInfo.userFanNum -= 1
-          }
-        })
-      }
+      this.$router.push({ name: 'SpaceReviews', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.userInfo.userName }})
     }
   }
+
 }
 </script>
 
