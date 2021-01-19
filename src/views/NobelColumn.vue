@@ -7,7 +7,7 @@
         <el-divider />
         <el-collapse v-model="activeNames" class="leftBar" @change="handleChange">
           <el-collapse-item title="2001~2020年" name="1" class="">
-            <div v-for="getter in getters1" :key="getter.id" class="single">{{ getter.title }}</div>
+            <div v-for="getter in authorlist.slice(0,20)" :key="getter._id" class="single">{{ getter.title }}</div>
           </el-collapse-item>
           <el-collapse-item title="1981~2000年" name="2" class="">
             <div v-for="getter in getters2" :key="getter.id" class="single">{{ getter.title }}</div>
@@ -27,10 +27,10 @@
         </el-collapse>
         <div class="authorInfo">
           <div class="container_Info">
-            <img :src="authorInfo.authorPhoto" class="authorPhoto" alt="">
+            <img :src="$host+authorInfo.authorPhoto" class="authorPhoto" alt="">
             <div class="simple_info">
               <div class="authorName">{{ authorInfo.authorName }}</div>
-              <div class="authorBirth">出生日期：{{ authorInfo.authorBirth }}</div>
+              <div class="authorBirth">出生日期：{{ authorInfo.authorBirthday }}</div>
               <div class="authorCountry">国家/地区：{{ authorInfo.authorCountry }}</div>
             </div>
           </div>
@@ -42,10 +42,10 @@
             <div class="mtitle">代表作品</div>
             <div class="recomBookBar">
               <book-thumb
-                v-for="book in authorInfo.recomBooks"
+                v-for="book in authorInfo.authorBook"
                 :key="book.id"
                 :book-title="book.bookName"
-                :book-pic="book.bookPhoto"
+                :book-pic="book.bookPhotoUrl"
                 :book-author="authorInfo.authorName"
                 :book-intro="book.bookIntroduce"
                 :book-id="book.bookId"
@@ -62,37 +62,21 @@
 </template>
 
 <script>
+/*global axios */
 export default {
   name: 'NobelColumn',
   data: function() {
     return {
       activeNames: ['1'],
-      authorInfo: {
-        authorName: '露易丝·格丽克',
-        authorBirth: '1943年04月22日',
-        authorCountry: '美国',
-        authorPhoto: require('@assets/gelike.jpg'),
-        authorIntroduce: '露易丝•格丽克（Louise Glück，1943— ） 美国桂冠诗人，生于一个匈牙利裔犹太人家庭，1968年出版处女诗集《头生子》，至今著有十二本诗集和一本诗随笔集，遍获各种诗歌奖项，包括普利策奖、国家图书奖、全国书评界奖、美国诗人学院华莱士•斯蒂文斯奖、波林根奖等。 格丽克的诗长于对心理隐微之处的把握，早期作品具有很强的自传性，后来的作品则通过人神对质，以及对神话人物的心理分析，导向人的存在根本问题，爱、死亡、生命、毁灭。自《阿勒山》开始，她的每部诗集都是精巧的织体，可作为一首长诗或一部组诗。从《阿勒山》和《野鸢尾》开始，格丽克成了“必读的诗人”。',
-        recomBooks: [{
-          id: 1,
-          bookId: 1,
-          bookName: '直到世界反映了灵魂最深层的需要',
-          bookIntroduce: '',
-          bookPhoto: require('@assets/zhidaoshijie.jpg')
-        }, {
-          id: 2,
-          bookId: 2,
-          bookName: '月光的合金',
-          bookIntroduce: '',
-          bookPhoto: require('@assets/yueguang.jpg')
-        }, {
-          id: 3,
-          bookId: 3,
-          bookName: '野鳶尾',
-          bookIntroduce: '',
-          bookPhoto: require('@assets/yeyuanwei.jpg')
-        }]
-      },
+      authorInfo: {},
+      authorlist: [
+        { _id: 1, id: 54, title: '2020年-露易丝·格丽克' },
+        { _id: 2, id: 55, title: '2019年-彼得·汉德克' },
+        { _id: 3, id: 56, title: '2018年-奥尔加·托卡尔丘克' },
+        { _id: 4, id: 12, title: '2017年-石黑一雄' },
+        { _id: 5, id: 8, title: '2016年-鲍勃·迪伦' }
+
+      ],
       getters1: [
         { id: 1, authorId: 1, title: '2020年-露易丝·格丽克' }, { id: 2, authorId: 2, title: '2019年-彼得·汉德克' },
         { id: 3, authorId: 3, title: '2018年-奥尔嘉·朵卡萩' }, { id: 4, authorId: 4, title: '2017年-石黑一雄' },
@@ -105,6 +89,7 @@ export default {
         { id: 17, authorId: 17, title: '2004年-艾尔弗雷德·耶利内克' }, { id: 18, authorId: 18, title: '2003年-约翰·马克斯维尔·库切' },
         { id: 19, authorId: 19, title: '2002年-凯尔泰斯·伊姆雷' }, { id: 20, authorId: 20, title: '2001年-维·苏·奈保尔' }
       ],
+
       getters2: [
         { id: 1, authorId: 1, title: '2020年-露易丝·格丽克' }, { id: 2, authorId: 2, title: '2019年-彼得·汉德克' },
         { id: 3, authorId: 3, title: '2018年-奥尔嘉·朵卡萩' }, { id: 4, authorId: 4, title: '2017年-石黑一雄' },
@@ -166,6 +151,13 @@ export default {
         { id: 19, authorId: 19, title: '2002年-凯尔泰斯·伊姆雷' }, { id: 20, authorId: 20, title: '2001年-维·苏·奈保尔' }
       ]
     }
+  },
+  created: function() {
+    const that = this
+    axios.post('/api/author/54').then(res => {
+      console.log(res)
+      that.authorInfo = res.data.author
+    })
   },
   methods: {
     handleChange(val) {

@@ -13,13 +13,21 @@
 
             <p v-if="loading">加载中...</p>
           </el-tab-pane>
-          <el-tab-pane label="关注" />
+          <el-tab-pane label="关注" lazy="true">
+            <div v-if="!this.$store.state.user.token">当前未登录,请登录后查看</div>
+            <div v-else>
+              <div v-for="moment in followMoments" :key="moment.momentId">
+                <community-moment :moment-info="moment" class="singleMoment" />
+                <el-divider class="b_divider" />
+              </div>
+            </div>
+          </el-tab-pane>
         </el-tabs>
       </div>
       <div class="actionBar">
         <div class="actionBarContainer" :class="actionBarFixed == true ? 'isFixed' :''">
           <div class="iconBar">
-            <div class="actSingle">
+            <div class="actSingle" @click="toWriteReview">
               <img :src="iconReview" class="act_icon" alt="">
               <div class="act_text">写书评</div></div>
             <div class="actSingle" @click="showDialog2">
@@ -75,14 +83,14 @@
             </div>
           </el-dialog>
           <div class="threeEntry">
-            <div class="entrySingle">
-              <img src="@assets/icon/shoucang.svg">我的收藏
+            <div class="entrySingle" @click="toMoments">
+              <img src="@assets/icon/shoucang.svg">我的动态
             </div>
-            <div class="entrySingle">
+            <div class="entrySingle" @click="toBookLists">
               <img src="@assets/icon/shudan.svg" alt="">我的书单
             </div>
-            <div class="entrySingle">
-              <img src="@assets/icon/xiaoxi.svg" alt="">我的消息
+            <div class="entrySingle" @click="toReviews">
+              <img src="@assets/icon/xiaoxi.svg" alt="">我的书评
             </div>
           </div>
         </div>
@@ -109,6 +117,7 @@ export default {
       now_date: '',
       now_time: '',
       moments: [],
+      followMoments: [],
       momentsList: [],
       index: 1,
       loading: false
@@ -117,11 +126,16 @@ export default {
   created: function() {
     const that = this
     const fd = new FormData()
-    fd.append('userId', this.$store.state.user.userInfo.userId)
+
     if (this.$store.state.user.token) {
+      fd.append('userId', this.$store.state.user.userInfo.userId)
       axios.post('/api/moment', fd, { headers: { 'token': this.$store.state.user.token }}).then(function(res) {
         console.log(res)
         that.moments = res.data.moments
+      })
+      axios.post('/api/followmoment', fd, { headers: { 'token': this.$store.state.user.token }}).then(res => {
+        console.log(res)
+        that.followMoments = res.data.moments
       })
     } else {
       axios.post('/api/moment').then(function(res) {
@@ -140,17 +154,42 @@ export default {
     window.removeEventListener('scroll', this.handleScroll)
   },
   methods: {
-    // handleReachBottom() {
-    //   return new Promise(resolve => {
-    //     setTimeout(() => {
-    //       const last = this.list1[this.list1.length - 1]
-    //       for (let i = 1; i < 11; i++) {
-    //         this.list1.push(last + i)
-    //       }
-    //       resolve()
-    //     }, 2000)
-    //   })
-    // },
+    toWriteReview: function() {
+      if (this.$store.state.user.token) {
+        this.$router.push({ name: 'ReviewEditPage' })
+      } else {
+        this.$message.error({
+          message: '请登录后操作'
+        })
+      }
+    },
+    toBookLists() {
+      if (this.$store.state.user.token) {
+        this.$router.push({ name: 'SpaceBookLists', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.$store.state.user.userInfo.userName }})
+      } else {
+        this.$message.error({
+          message: '请登录后操作'
+        })
+      }
+    },
+    toMoments() {
+      if (this.$store.state.user.token) {
+        this.$router.push({ name: 'SpaceMoments', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.$store.state.user.userInfo.userName }})
+      } else {
+        this.$message.error({
+          message: '请登录后操作'
+        })
+      }
+    },
+    toReviews() {
+      if (this.$store.state.user.token) {
+        this.$router.push({ name: 'SpaceReviews', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.$store.state.user.userInfo.userName }})
+      } else {
+        this.$message.error({
+          message: '请登录后操作'
+        })
+      }
+    },
     publishMoment: function() {
       const that = this
       if (this.momentArea.trim() === '' && this.pic_list.length === 0) {
@@ -352,6 +391,7 @@ box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     font-size: 14px;
     height: 32px;
     line-height: 32px;
+    cursor: pointer;
 }
 .entrySingle img{
     margin-right: 10px;

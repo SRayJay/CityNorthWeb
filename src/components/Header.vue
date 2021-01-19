@@ -12,7 +12,8 @@
           <div class="nav">主页</div></router-link>
         <router-link to="/community">
           <div class="nav">社区</div></router-link>
-        <div class="nav">排行榜</div>
+        <router-link to="/rank">
+          <div class="nav">排行榜</div></router-link>
         <router-link to="/category">
           <div class="nav">分类</div></router-link>
         <router-link to="/columns">
@@ -36,9 +37,9 @@
             </div>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item><div @click="toMySpace">个人主页</div></el-dropdown-item>
-              <el-dropdown-item>消息中心</el-dropdown-item>
+              <el-dropdown-item> <div @click="toMoments">我的动态</div> </el-dropdown-item>
               <el-dropdown-item><div @click="toBookLists">我的书单</div></el-dropdown-item>
-              <el-dropdown-item>我的收藏</el-dropdown-item>
+              <el-dropdown-item> <div @click="toReviews">我的书评</div> </el-dropdown-item>
               <el-dropdown-item>
                 <div @click="toSetting">设置中心</div></el-dropdown-item>
               <el-dropdown-item divided><div @click="logout">退出登录</div></el-dropdown-item>
@@ -76,7 +77,7 @@ export default {
       }
     },
     userAvatar: function() {
-      return this.$host + this.$store.state.user.userInfo.userPhoto
+      return this.$host + this.$store.state.user.userInfo.userPhoto || ''
     }
   },
   methods: {
@@ -92,6 +93,12 @@ export default {
     },
     toBookLists() {
       this.$router.push({ name: 'SpaceBookLists', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.$store.state.user.userInfo.userName }})
+    },
+    toMoments() {
+      this.$router.push({ name: 'SpaceMoments', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.$store.state.user.userInfo.userName }})
+    },
+    toReviews() {
+      this.$router.push({ name: 'SpaceReviews', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.$store.state.user.userInfo.userName }})
     },
     search: function() {
       const content = this.$refs.search_word.value.trim()

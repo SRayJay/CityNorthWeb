@@ -16,8 +16,13 @@
       v-html=" momentContent "
     />
     <div v-if="momentContent.trim()!==''&& content_haveMore" class="more" @click="getMore">--展开--</div>
-    <div v-if="momentPhoto.length>0" class="momentPhotos">
-      <img v-for="photo in momentPhoto" :key="photo.photoId" class="momentPhoto" :src="$host+photo.photoSrc" alt="">
+    <div v-if="momentInfo.review">
+      <simple-review style="margin-left:70px;" :review-info="momentInfo.review" :user-name="userName" />
+    </div>
+    <div v-else>
+      <div v-if="momentPhoto.length>0" class="momentPhotos">
+        <img v-for="photo in momentPhoto" :key="photo.photoId" class="momentPhoto" :src="$host+photo.photoSrc" alt="">
+      </div>
     </div>
     <div class="momentTime" style="text-align:left;margin-left:70px">{{ momentTime }}</div>
   </div>
@@ -78,6 +83,8 @@ export default {
 .l_wrap{
   position: relative;
   width: 950px;
+  /* float: left; */
+  text-align: left;
   min-height: 170px;
   /* margin-left: 20px; */
   /* border: 1px solid red; */
@@ -87,6 +94,9 @@ export default {
     color: #3379c6;
     font-size: 14px;
     z-index: 999;
+    display: inline-block;
+    text-align: center;
+    width: 100%;
     margin-top: 10px;
 }
 .userAvatar{
@@ -153,6 +163,7 @@ text-align: left;
 height: 160px;
 width: 950px;
 margin-top: 20px;
+margin-left: 65px;
 display: inline-block;
 }
 .momentPhoto{

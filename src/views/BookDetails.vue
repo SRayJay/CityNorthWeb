@@ -8,7 +8,7 @@
           <div class="booktitle">
             {{ BookInfo.bookName }}
           </div>
-          <div class="pic">
+          <div v-loading="loading" class="pic">
             <img :src="this.$host+BookInfo.bookPhotoUrl" alt="" class="bookpic">
           </div>
           <div class="author">作者：{{ '['+BookInfo.authorCountry+']'+BookInfo.authorName }}</div>
@@ -42,20 +42,29 @@
           <div class="subtitle">书摘</div>
           <div class="write_excerpts" @click="toWriteExcerpt"><i class="el-icon-edit small-icon" /><span> 写书摘</span></div>
           <div class="cutline" />
-          <div v-for="excerpts in show_excerpts " :key="excerpts.excerptsId" class="excerpts_single">
-            <div class="excerpts_content">{{ excerpts.excerptsContent }}</div>
-            <img :src="excerpts.userPhoto" class="excerpts_user_avatar" alt="">
-            <div class="excerpts_user_name">{{ excerpts.userName }}</div>
-            <div class="likes">
-              <div class="likes_icon">
-                <img :src="like_icon" alt="">
-              </div>
-              <div class="likes_num">{{ excerpts.likes }}</div>
-            </div>
+          <div v-for="excerpts in show_excerpts.slice(0,2) " :key="excerpts.excerptsId" class="excerpts_single">
+            <div class="excerpts_content" v-html="excerpts.excerptsContent" />
+            <div style="margin-bottom:10px;margin-top:10px;height:24px;">
+              <img :src="$host+excerpts.userPortrait" class="excerpts_user_avatar" alt="">
+              <div class="excerpts_user_name">{{ excerpts.userName }}</div></div>
+            <el-divider />
           </div>
-          <div class="excerpts_more">
-            <i class="el-icon-arrow-right" /> 更多书摘({{ BookInfo.excerptsNum }}篇)</div>
+          <div class="excerpts_more" @click="toBookExcerpts">
+            <i class="el-icon-arrow-right" /> 所有书摘({{ BookInfo.excerptsNum }}篇)</div>
         </div>
+        <el-dialog title="写书摘" width="30%" :before-close="handleClose" :visible.sync="excerptVisible" :close-on-click-modal="false" :close-on-press-escape="false">
+          <el-input
+            v-model="excerptArea"
+            resize="none"
+            style="outline:none;padding:12px"
+            type="textarea"
+            placeholder="请输入内容"
+            :autosize="{ minRows: 10, maxRows: 12}"
+          />
+          <div slot="footer" class="dialog-footer">
+            <button class="submitBtn" @click="publishExcerpt">发 布</button>
+          </div>
+        </el-dialog>
         <div class="review">
           <div class="subtitle">书评</div>
           <div class="write_review" @click="toWriteReview"><i class="el-icon-edit-outline small-icon" /> <span> 写书评</span></div>
@@ -70,8 +79,8 @@
               <div class="likes_num">{{ review.pointNum }}</div>
             </div>
           </div>
-          <div class="review_more">
-            <i class="el-icon-arrow-right" />更多书评({{ BookInfo.reviewNum }}篇)</div>
+          <div class="review_more" @click="toBookReviews">
+            <i class="el-icon-arrow-right" />所有书评({{ BookInfo.reviewNum }}篇)</div>
         </div>
 
       </div>
@@ -124,9 +133,13 @@ export default {
       bookid: this.$route.params.bookid,
       content_haveMore: false,
       author_haveMore: false,
+      loading: false,
       BookInfo: {
         bookScore: 0
       },
+      excerptArea: '',
+      excerptContent: '',
+      excerptVisible: false,
       default: 0,
       like_icon: require('@assets/icon/like.png'),
       relationbook: [],
@@ -150,6 +163,7 @@ export default {
   created: function() {
     const that = this
     const fd = new FormData()
+    this.loading = true
     if (this.$store.state.user.token) {
       fd.append('userId', that.$store.state.user.userInfo.userId)
       axios.post('/api/book/' + that.bookid, fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
@@ -160,6 +174,7 @@ export default {
         this.show_excerpts = data.excerpts
         this.show_reviews = data.review
         this.relationbook = data.relationbook
+        that.loading = false
       })
     } else {
       axios.post('/api/book/' + that.bookid).then(res => {
@@ -170,6 +185,7 @@ export default {
         this.show_excerpts = data.excerpts
         this.show_reviews = data.review
         this.relationbook = data.relationbook
+        that.loading = false
       })
     }
   },
@@ -184,6 +200,34 @@ export default {
     })
   },
   methods: {
+    handleClose(done) {
+      this.$confirm('确认关闭？')
+        .then(_ => {
+          done()
+        })
+        .catch(_ => {})
+    },
+    publishExcerpt: function() {
+      const that = this
+      const fd = new FormData()
+      if (this.excerptArea.trim() !== '') {
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('bookId', this.bookid)
+        this.excerptContent = this.excerptArea.replace(/\n|\r\n/g, '<br/>')
+        fd.append('excerptsContent', this.excerptContent)
+        axios.post('/api/write/excerpts', fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
+          console.log(res)
+          that.excerptArea = ''
+          that.excerptVisible = false
+          that.$message({
+            type: 'success',
+            message: '发布成功'
+          })
+        })
+      } else {
+        this.$message.error({ message: '请输入内容' })
+      }
+    },
     getRouteResult: function() {
       const that = this
       const fd = new FormData()
@@ -270,7 +314,8 @@ export default {
         const fd = new FormData()
         fd.append('userId', this.$store.state.user.userInfo.userId)
         fd.append('bookId', this.bookid)
-        this.$router.push({ name: 'ExcerptEditPage', query: { bookInfo: JSON.stringify(this.BookInfo) }})
+        this.excerptVisible = true
+        // this.$router.push({ name: 'ExcerptEditPage', query: { bookInfo: JSON.stringify(this.BookInfo) }})
       } else {
         this.$message.error('当前未登录，请登录后操作')
       }
@@ -387,6 +432,12 @@ export default {
     toBookDetails(bookId) {
       this.bookid = bookId
       this.$router.push({ name: 'book', params: { bookid: bookId }})
+    },
+    toBookReviews() {
+      this.$router.push({ name: 'BookReviews', params: { bookid: this.bookid }})
+    },
+    toBookExcerpts() {
+      this.$router.push({ name: 'BookExcerpts', params: { bookid: this.bookid }})
     }
   }
 
@@ -413,6 +464,7 @@ export default {
   .bookinfo{
       width: 700px;
       position: relative;
+      min-height: 1100px;
       margin-top: 40px;
       /* height: 1700px; */
       padding-bottom: 40px;
@@ -589,7 +641,8 @@ export default {
   }
   .excerpts_single{
     width: 585px;
-    height: 100px;
+    min-height: 60px;
+    /* height: 100px; */
     /* margin-top: 15px; */
     margin: 15px 0px;
     position: relative;
@@ -627,24 +680,31 @@ export default {
   .excerpts_content{
     font-size: 14px;
     text-align: left;
+    /* min-height: 40px; */
+    text-overflow: -o-ellipsis-lastline;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+    /* margin-bottom: 10px; */
   }
   .excerpts_user_avatar{
     height: 24px;
     width:24px;
-    position: absolute;
-    left: 0px;
-    top: 70px;
+    float: left;
   }
   .excerpts_user_name{
-    position: absolute;
-    left: 35px;
-    top: 75px;
+    float: left;
+    line-height: 24px;
+    margin-left: 10px;
     font-size: 14px;
   }
   .likes{
     position: absolute;
     left: 600px;
     top: 0px;
+
   }
   .likes_icon img{
     width: 16px;
@@ -710,6 +770,15 @@ export default {
       position: absolute;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   }
+  .submitBtn{
+    width: 80px;
+    height: 30px;
+    background: #3379cc;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+  }
   .mtitle{
       font-size: 18px;
       position: relative;
@@ -749,7 +818,8 @@ export default {
     position: absolute;
     left: 740px;
     top: 260px;
-    height: 800px;
+    padding-bottom: 30px;
+    /* height: 800px; */
     width: 284px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   }

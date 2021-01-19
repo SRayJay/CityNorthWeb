@@ -89,7 +89,7 @@ export default {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        font-size: 13px;
+        font-size: 12px;
         padding-bottom: 8px;
         padding-left: 8px;
         padding-right: 8px;

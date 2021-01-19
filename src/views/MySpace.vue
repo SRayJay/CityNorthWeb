@@ -12,8 +12,61 @@
         <div class="userName">{{ userInfo.userName }}</div>
         <div class="userLabel">{{ userInfo.userSelfLable }}</div>
         <div class="followAndFan">
-          <span class="num">{{ userInfo.userFollowNum||0 }}</span>关注 <span class="num">{{ userInfo.userFanNum||0 }}</span>被关注</div>
+          <span class="num" @click="checkFollow">{{ userInfo.userFollowNum||0 }}</span>关注 <span class="num" @click="checkFan">{{ userInfo.userFanNum||0 }}</span>被关注</div>
       </div>
+      <el-dialog
+        title="我关注的"
+        :visible.sync="followDialogVisible"
+        width="20%"
+      >
+        <el-table
+          v-loading="followDialogLoading"
+          max-height="300"
+          :data="follows"
+          stripe
+          border
+          :show-header="false"
+          style="width: 100%;margin-bottom:30px;min-height:240px;"
+          highlight-current-row
+          @row-click="toHisSpace"
+          @current-change="handleCurrentChange"
+        >
+          <el-table-column>
+            <template slot-scope="scope">
+              <img :src="$host+scope.row.userPhoto" class="userMiniAvatar" alt="">
+              <div class="userMiniName">{{ scope.row.userName }}</div>
+              <div class="cancelFollowBtn">已关注</div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-dialog>
+      <el-dialog
+        title="关注我的"
+        :visible.sync="fanDialogVisible"
+        width="20%"
+      >
+        <el-table
+          v-loading="fanDialogLoading"
+          max-height="300"
+          :data="fans"
+          stripe
+          border
+          :show-header="false"
+          style="width: 100%;margin-bottom:30px;min-height:240px;"
+          highlight-current-row
+          @row-click="toHisSpace"
+          @current-change="handleCurrentChange"
+        >
+          <el-table-column>
+            <template slot-scope="scope">
+              <img :src="$host+scope.row.userPhoto" class="userMiniAvatar" alt="">
+              <div class="userMiniName">{{ scope.row.userName }}</div>
+              <!-- <div class="FollowBtn">关注</div> -->
+            </template>
+          </el-table-column>
+
+        </el-table>
+      </el-dialog>
       <div class="momentBar">
         <div class="mtitle">我的动态({{ moments.length }})</div>
         <btn-more class="moreBtn" @toMore="toMoments" />
@@ -22,8 +75,10 @@
         <single-moment v-if="moments.length>1" :moment-info="moments[moments.length-2]" class="singleReview" />
       </div>
       <div class="excerptsBar">
-        <div class="mtitle">我的书摘</div>
-        <btn-more class="moreBtn" />
+        <div class="mtitle">我的书摘({{ excerpts.length }})</div>
+        <btn-more class="moreBtn" @toMore="toExcerpts" />
+        <single-excerpt v-if="excerpts.length>0" :excerpt-info="excerpts[excerpts.length-1]" class="singleReview" />
+        <single-excerpt v-if="excerpts.length>1" :excerpt-info="excerpts[excerpts.length-2]" class="singleReview" />
       </div>
       <div class="reviewBar">
         <div class="mtitle">我的书评({{ reviews.length }})</div>
@@ -51,10 +106,17 @@ export default {
     return {
       userInfo: this.$store.state.user.userInfo || {},
       reviews: {},
+      excerpts: {},
       moments: {},
       wantBook: [],
       readingBook: [],
-      haveReadBook: []
+      haveReadBook: [],
+      follows: [],
+      fans: [],
+      fanDialogVisible: false,
+      fanDialogLoading: false,
+      followDialogLoading: false,
+      followDialogVisible: false
     }
   },
   computed: {
@@ -70,6 +132,7 @@ export default {
     axios.post('/api/user/space/' + this.$store.state.user.userInfo.userId, { headers: { 'token': this.$store.state.user.token }}).then((res) => {
       this.userInfo = res.data.user
       this.reviews = res.data.reviews
+      this.excerpts = res.data.excerpts
       this.moments = res.data.moments
       this.wantBook = res.data.wantBook
       this.readingBook = res.data.readingBook
@@ -91,6 +154,33 @@ export default {
     },
     toReviews() {
       this.$router.push({ name: 'SpaceReviews', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.userInfo.userName }})
+    },
+    toExcerpts() {
+      this.$router.push({ name: 'SpaceExcerpts', params: { userid: this.$store.state.user.userInfo.userId }, query: { userName: this.userInfo.userName }})
+    },
+    toHisSpace(val) {
+      console.log(val.userId)
+      this.$router.push({ name: 'Space', params: { userid: val.userId }})
+    },
+    checkFollow() {
+      const that = this
+      this.followDialogVisible = true
+      this.followDialogLoading = true
+      axios.post('/api/user/follow/' + this.$store.state.user.userInfo.userId).then(res => {
+        console.log(res)
+        that.follows = res.data.follows
+        that.followDialogLoading = false
+      })
+    },
+    checkFan() {
+      const that = this
+      this.fanDialogVisible = true
+      this.fanDialogLoading = true
+      axios.post('/api/user/fan/' + this.$store.state.user.userInfo.userId).then(res => {
+        console.log(res)
+        that.fans = res.data.fans
+        that.fanDialogLoading = false
+      })
     }
   }
 
@@ -128,6 +218,56 @@ export default {
     left: 0;
     top: 0;
     /* margin-top: 40px; */
+  }
+  .userMiniAvatar{
+    height: 36px;
+    width: 36px;
+    float: left;
+  }
+  .userMiniName{
+    margin-left: 20px;
+    font-size:16px;
+    height:36px;
+    line-height:36px;
+    float:left;
+  }
+  .miniIcon{
+    height: 16px;
+    width: 16px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    /* display: inline-block; */
+    line-height: 16px;
+  }
+  .cancelFollowBtn{
+    float: right;
+    position: relative;
+    height: 32px;
+    width: 72px;
+    vertical-align: middle;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    color: #777;
+    cursor: pointer;
+    text-align: center;
+    line-height: 32px;
+  }
+  .FollowBtn{
+    float: right;
+    position: relative;
+    height: 32px;
+    width: 72px;
+    vertical-align: middle;
+    background: #d81e06;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+    line-height: 32px;
   }
   .userAvatar_pic{
     width: 180px;
@@ -177,6 +317,7 @@ export default {
     font-size: 18px;
     margin-left: 5px;
     margin-right: 5px;
+    cursor: pointer;
   }
   .momentBar{
     position: relative;

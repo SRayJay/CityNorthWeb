@@ -16,12 +16,21 @@ const ReviewEditPage = () => import('@views/ReviewEditPage.vue')
 const ReviewContentPage = () => import('@views/ReviewContentPage.vue')
 const SpecialColumn = () => import('@views/SpecialColumn.vue')
 const NobelColumn = () => import('@views/NobelColumn.vue')
+const LixiangguoColumn = () => import('@views/LixiangguoColumn.vue')
+const YiwenColumn = () => import('@views/YiwenColumn.vue')
+const YilinColumn = () => import('@views/YilinColumn.vue')
+const ZhongxinColumn = () => import('@views/ZhongxinColumn.vue')
+const ShijiColumn = () => import('@views/ShijiColumn.vue')
 const SearchResult = () => import('@views/SearchResult.vue')
 const Community = () => import('@views/Community.vue')
 const SpaceMoments = () => import('@views/SpaceMoments.vue')
 const SpaceBookLists = () => import('@views/SpaceBookLists.vue')
 const SpaceReviews = () => import('@views/SpaceReviews.vue')
+const SpaceExcerpts = () => import('@views/SpaceExcerpts.vue')
 const Category = () => import('@views/Category.vue')
+const Rank = () => import('@views/Rank.vue')
+const BookReviews = () => import('@views/BookReviews.vue')
+const BookExcerpts = () => import('@views/BookExcerpts.vue')
 
 const originalPush = VueRouter.prototype.push
 // 修改原型对象中的push方法
@@ -68,6 +77,11 @@ const router = new VueRouter({
       component: SpaceReviews
     },
     {
+      path: '/space/:userid/excerpts',
+      name: 'SpaceExcerpts',
+      component: SpaceExcerpts
+    },
+    {
       path: '/space/:userid/setting',
       name: 'Setting',
       component: Setting,
@@ -81,9 +95,24 @@ const router = new VueRouter({
       component: Category
     },
     {
+      path: '/rank',
+      name: 'Rank',
+      component: Rank
+    },
+    {
       path: '/book/:bookid',
       name: 'book',
       component: BookDetails
+    },
+    {
+      path: '/book/:bookid/reviews',
+      name: 'BookReviews',
+      component: BookReviews
+    },
+    {
+      path: '/book/:bookid/excerpts',
+      name: 'BookExcerpts',
+      component: BookExcerpts
     },
     {
       path: '/author/:authorid',
@@ -115,6 +144,31 @@ const router = new VueRouter({
       component: NobelColumn
     },
     {
+      path: '/columns/imaginist',
+      name: 'LixiangguoColumn',
+      component: LixiangguoColumn
+    },
+    {
+      path: '/columns/yiwen',
+      name: 'YiwenColumn',
+      component: YiwenColumn
+    },
+    {
+      path: '/columns/yilin',
+      name: 'YilinColumn',
+      component: YilinColumn
+    },
+    {
+      path: '/columns/zhongxin',
+      name: 'ZhongxinColumn',
+      component: ZhongxinColumn
+    },
+    {
+      path: '/columns/shiji',
+      name: 'ShijiColumn',
+      component: ShijiColumn
+    },
+    {
       path: '/search/:searchContent',
       name: 'SearchResult',
       component: SearchResult
@@ -143,6 +197,7 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
+
 router.afterEach((to, from, next) => {
   window.scrollTo(0, 0)
 })

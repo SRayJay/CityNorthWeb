@@ -3,7 +3,7 @@
     <Header />
     <div class="wrap">
       <div class="background_pic">
-        <img :src="userBackground" class="background_pic_image" alt="">
+        <img v-loading="loading" :src="userBackground" class="background_pic_image" alt="">
       </div>
       <div class="userInfoContainer">
         <div class="userAvatar">
@@ -12,30 +12,85 @@
         <div class="userName">{{ userInfo.userName }}</div>
         <div class="userLabel">{{ userInfo.userSelfLable }}</div>
         <div class="followAndFan">
-          <span class="num">{{ userInfo.userFollowNum||0 }}</span>关注 <span class="num">{{ userInfo.userFanNum||0 }}</span>被关注</div>
+          <span class="num" @click="checkFollow">{{ userInfo.userFollowNum||0 }}</span>关注 <span class="num" @click="checkFan">{{ userInfo.userFanNum||0 }}</span>被关注</div>
         <div v-if="parseInt(this.$route.params.userid)!==nowUserId" class="followBtnBar">
           <img :src="followPic" class="followBtn" alt="" @click="follow">
-          <img src="@assets/icon/sixin.svg" class="sixinBtn" alt="">
+          <!-- <img src="@assets/icon/sixin.svg" class="sixinBtn" alt=""> -->
         </div>
       </div>
-      <div class="momentBar">
+      <el-dialog
+        :title="followTitle"
+        :visible.sync="followDialogVisible"
+        width="20%"
+      >
+        <el-table
+          v-loading="followDialogLoading"
+          max-height="300"
+          :data="follows"
+          stripe
+          border
+          :show-header="false"
+          style="width: 100%;margin-bottom:30px;min-height:240px;"
+          highlight-current-row
+          @row-click="toHisSpace"
+          @current-change="handleCurrentChange"
+        >
+          <el-table-column>
+            <template slot-scope="scope">
+              <img :src="$host+scope.row.userPhoto" class="userMiniAvatar" alt="">
+              <div class="userMiniName">{{ scope.row.userName }}</div>
+              <div class="cancelFollowBtn">已关注</div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-dialog>
+      <el-dialog
+        :title="fanTitle"
+        :visible.sync="fanDialogVisible"
+        width="20%"
+      >
+        <el-table
+          v-loading="fanDialogLoading"
+          max-height="300"
+          :data="fans"
+          stripe
+          border
+          :show-header="false"
+          style="width: 100%;margin-bottom:30px;min-height:240px;"
+          highlight-current-row
+          @row-click="toHisSpace"
+          @current-change="handleCurrentChange"
+        >
+          <el-table-column>
+            <template slot-scope="scope">
+              <img :src="$host+scope.row.userPhoto" class="userMiniAvatar" alt="">
+              <div class="userMiniName">{{ scope.row.userName }}</div>
+              <!-- <div class="FollowBtn">关注</div> -->
+            </template>
+          </el-table-column>
+
+        </el-table>
+      </el-dialog>
+      <div v-loading="loading" class="momentBar">
         <div class="mtitle">{{ rencheng }}的动态({{ moments.length }})</div>
         <btn-more class="moreBtn" @toMore="toMoments($route.params.userid)" />
         <single-moment v-if="moments.length>0" :moment-info="moments[moments.length-1]" class="singleReview" />
         <el-divider v-if="moments.length>1" />
         <single-moment v-if="moments.length>1" :moment-info="moments[moments.length-2]" class="singleReview" />
       </div>
-      <div class="excerptsBar">
+      <div v-loading="loading" class="excerptsBar">
         <div class="mtitle">{{ rencheng }}的书摘</div>
-        <btn-more class="moreBtn" />
+        <btn-more class="moreBtn" @click="toExcerpts" />
+        <single-excerpt v-if="excerpts.length>0" :excerpt-info="excerpts[excerpts.length-1]" class="singleReview" />
+        <single-excerpt v-if="excerpts.length>1" :excerpt-info="excerpts[excerpts.length-2]" class="singleReview" />
       </div>
-      <div class="reviewBar">
+      <div v-loading="loading" class="reviewBar">
         <div class="mtitle">{{ rencheng }}的书评({{ reviews.length }})</div>
         <btn-more class="moreBtn" @toMore="toReviews" />
         <single-review v-if="reviews.length>0" :review-info="reviews[reviews.length-1]" class="singleReview" />
         <single-review v-if="reviews.length>1" :review-info="reviews[reviews.length-2]" class="singleReview" />
       </div>
-      <div class="bookListBar">
+      <div v-loading="loading" class="bookListBar">
         <div class="mtitle">{{ rencheng }}的书单</div>
         <btn-more class="moreBtn" @toMore="toBookLists" />
         <single-book-list v-if="wantBook.length>0" title="想读" :book-list="wantBook" />
@@ -57,12 +112,19 @@ export default {
       userInfo: {},
       reviews: {},
       moments: {},
+      excerpts: {},
       wantBook: [],
+      loading: false,
       readingBook: [],
       haveReadBook: [],
+      follows: [],
+      fans: [],
       nowUserId: (this.$store.state.user.token) ? this.$store.state.user.userInfo.userId : 0,
-      isFollow: 0
-
+      isFollow: 0,
+      followDialogLoading: false,
+      followDialogVisible: false,
+      fanDialogVisible: false,
+      fanDialogLoading: false
     }
   },
   computed: {
@@ -79,6 +141,12 @@ export default {
         return 'TA'
       }
     },
+    followTitle: function() {
+      return this.rencheng + '关注的'
+    },
+    fanTitle: function() {
+      return '关注' + this.rencheng + '的'
+    },
     // TODO
     followPic: function() {
       if (this.nowUserId === 0) {
@@ -90,9 +158,14 @@ export default {
       }
     }
   },
+  watch: {
+    '$route': 'getRouteResult'
+  },
   created: function() {
+    console.log(this.nowUserId)
     const fd = new FormData()
     const that = this
+    this.loading = true
     fd.append('visitId', this.$route.params.userid)
     if (this.$store.state.user.token) {
       fd.append('userId', this.$store.state.user.userInfo.userId)
@@ -100,10 +173,12 @@ export default {
         that.userInfo = res.data.user
         that.reviews = res.data.reviews
         that.moments = res.data.moments
+        that.excerpts = res.data.excerpts
         that.isFollow = res.data.isFollow
         that.wantBook = res.data.wantBook
         that.readingBook = res.data.readingBook
         that.haveReadBook = res.data.haveReadBook
+        that.loading = false
         console.log(res)
       }).catch((error) => {
         console.log(error)
@@ -113,11 +188,13 @@ export default {
         that.userInfo = res.data.user
         that.reviews = res.data.reviews
         that.moments = res.data.moments
+        this.excerpts = res.data.excerpts
         that.isFollow = res.data.isFollow
         that.wantBook = res.data.wantBook
         that.readingBook = res.data.readingBook
         that.haveReadBook = res.data.haveReadBook
         console.log(res)
+        that.loading = false
       }).catch((error) => {
         console.log(error)
       })
@@ -136,6 +213,49 @@ export default {
     },
     toReviews() {
       this.$router.push({ name: 'SpaceReviews', params: { userid: this.$route.params.userid }, query: { userName: this.userInfo.userName }})
+    },
+    toExcerpts() {
+      this.$router.push({ name: 'SpaceExcerpts', params: { userid: this.$route.params.userid }, query: { userName: this.userInfo.userName }})
+    },
+    toHisSpace(val) {
+      this.followDialogVisible = false
+      this.fanDialogLoading = false
+      console.log(val.userId)
+      this.$router.push({ name: 'Space', params: { userid: val.userId }})
+    },
+    getRouteResult() {
+      console.log(this.nowUserId)
+      const fd = new FormData()
+      const that = this
+      fd.append('visitId', this.$route.params.userid)
+      if (this.$store.state.user.token) {
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        axios.post('/api/user/space/' + this.$route.params.userid, fd, { headers: { 'token': that.$store.state.user.token }}).then((res) => {
+          that.userInfo = res.data.user
+          that.reviews = res.data.reviews
+          that.moments = res.data.moments
+          that.isFollow = res.data.isFollow
+          that.wantBook = res.data.wantBook
+          that.readingBook = res.data.readingBook
+          that.haveReadBook = res.data.haveReadBook
+          console.log(res)
+        }).catch((error) => {
+          console.log(error)
+        })
+      } else {
+        axios.post('/api/user/space/' + this.$route.params.userid, fd).then((res) => {
+          that.userInfo = res.data.user
+          that.reviews = res.data.reviews
+          that.moments = res.data.moments
+          that.isFollow = res.data.isFollow
+          that.wantBook = res.data.wantBook
+          that.readingBook = res.data.readingBook
+          that.haveReadBook = res.data.haveReadBook
+          console.log(res)
+        }).catch((error) => {
+          console.log(error)
+        })
+      }
     },
     follow() {
       if (!this.$store.state.user.token) {
@@ -167,6 +287,26 @@ export default {
           }
         })
       }
+    },
+    checkFollow() {
+      const that = this
+      this.followDialogVisible = true
+      this.followDialogLoading = true
+      axios.post('/api/user/follow/' + this.$route.params.userid).then(res => {
+        console.log(res)
+        that.follows = res.data.follows
+        that.followDialogLoading = false
+      })
+    },
+    checkFan() {
+      const that = this
+      this.fanDialogVisible = true
+      this.fanDialogLoading = true
+      axios.post('/api/user/fan/' + this.$route.params.userid).then(res => {
+        console.log(res)
+        that.fans = res.data.fans
+        that.fanDialogLoading = false
+      })
     }
   }
 }
@@ -208,6 +348,42 @@ export default {
     width: 180px;
     height: 180px;
   }
+    .userMiniAvatar{
+    height: 36px;
+    width: 36px;
+    float: left;
+  }
+  .userMiniName{
+    margin-left: 20px;
+    font-size:16px;
+    height:36px;
+    line-height:36px;
+    float:left;
+  }
+  .miniIcon{
+    height: 16px;
+    width: 16px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    /* display: inline-block; */
+    line-height: 16px;
+  }
+  .cancelFollowBtn{
+    float: right;
+    position: relative;
+    height: 32px;
+    width: 72px;
+    vertical-align: middle;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    color: #777;
+    cursor: pointer;
+    text-align: center;
+    line-height: 32px;
+  }
   .userName{
     font-size: 22px;
     position: absolute;
@@ -230,7 +406,7 @@ export default {
   .followBtnBar{
     position: absolute;
     top: 200px;
-    left: 42px;
+    left: 80px;
     /* height: 24px;
     line-height: 24px; */
   }
@@ -252,6 +428,7 @@ export default {
     font-size: 18px;
     margin-left: 5px;
     margin-right: 5px;
+    cursor: pointer;
   }
   .momentBar{
     position: relative;

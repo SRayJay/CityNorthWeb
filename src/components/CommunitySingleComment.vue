@@ -5,15 +5,15 @@
       <div class="userName">{{ commentInfo.userName }}:</div>
       <div class="commentContent">{{ commentInfo.recommendContent }}</div>
       <div class="actionBar">
-        <div class="like">
+        <!-- <div class="like">
           <img src="@assets/icon/like.png" class="like_icon" alt="">{{ commentInfo.pointNum }}
-        </div>
+        </div> -->
         <div class="replyBtn">回复</div>
       </div>
     </div>
     <div class="nextBar">
       <div class="timeline">{{ commentInfo.recommendTime }}</div>
-      <div class="checkMore">共{{ commentInfo.secondRecommand.length }}条回复</div>
+      <!-- <div class="checkMore">共{{ commentInfo.secondRecommand.length }}条回复</div> -->
     </div>
     <el-divider />
   </div>
@@ -104,6 +104,7 @@ export default {
 .nextBar{
 margin-top: 10px;
     margin-left: 36px;
+    height: 15px;
 }
 .timeline{
     font-size: 13px;

@@ -1,26 +1,20 @@
 <template>
   <div class="l_wrap">
-    <img :src="this.$host+pic" class="bookPic" alt="" @click="toReviewContent">
-    <div class="reviewTitle" @click="toReviewContent">{{ reviewTitle }}</div>
-    <div class="actionBar">
-      <img src="@assets/icon/like.png" class="like_icon" alt="">
-      {{ pointNum }}
-    </div>
-    <div class="lBar">
-      <div class="bookName">《{{ bookName }}》</div>
-      <el-rate
-        :value="halfrate(bookRate)"
-        class="rate"
-        disabled
-        :max="5"
-        text-color="#ff9900"
-      />
-
-    </div>
-    <div class="reviewText" @click="toReviewContent">{{ reviewText }}</div>
+    <img :src="$host+excerptInfo.bookPhoto" class="bookPic" alt="" @click="toReviewContent">
+    <div class="reviewTitle" @click="toReviewContent">《{{ excerptInfo.bookName }}》</div>
+    <div
+      ref="content_text"
+      class="reviewText"
+      :class="{excerptContent_all:!content_haveMore,excerptContent:content_haveMore}"
+      @click="toReviewContent"
+      v-html="'“ '+excerptInfo.excerptsContent +' ”'"
+    />
+    <div v-if="content_haveMore" class="more" @click="getMore">--展开--</div>
     <div v-if="owner" class="deleteBar">
       <i class="el-icon-delete-solid" alt="删除" @click="showDeleteDialog" />
     </div>
+    <div style="clear:both;" />
+    <el-divider />
     <el-dialog
       title="提示"
       :visible.sync="deleteVisible"
@@ -38,9 +32,9 @@
 
 <script>
 export default {
-  name: 'SingleReview',
+  name: 'SingleExcerpt',
   props: {
-    'reviewInfo': {
+    'excerptInfo': {
       type: Object,
       default: function() {
         return {}
@@ -53,14 +47,16 @@ export default {
   },
   data: function() {
     return {
-      pic: this.reviewInfo.bookPhoto,
-      reviewTitle: this.reviewInfo.reviewTitle,
-      bookName: this.reviewInfo.bookName,
-      bookRate: this.reviewInfo,
-      reviewText: this.reviewInfo.reviewText,
-      pointNum: this.reviewInfo.pointNum,
+      content_haveMore: false,
       deleteVisible: false
     }
+  },
+  mounted: function() {
+    this.$nextTick(() => {
+      setTimeout(() => {
+        this.change_content_haveMore()
+      }, 100)
+    })
   },
   methods: {
     halfrate: function(rate) {
@@ -68,6 +64,18 @@ export default {
     },
     toReviewContent: function() {
       this.$router.push({ name: 'ReviewContentPage', params: { reviewid: this.reviewInfo.reviewId }})
+    },
+    change_content_haveMore: function() {
+      if (this.$refs.content_text.offsetHeight > 125) {
+        this.content_haveMore = true
+        return true
+      } else {
+        this.content_haveMore = false
+        return true
+      }
+    },
+    getMore: function() {
+      this.content_haveMore = !this.content_haveMore
     },
     showDeleteDialog: function() {
       this.deleteVisible = true
@@ -91,43 +99,36 @@ export default {
 .l_wrap{
   position: relative;
   width: 1024px;
-  height: 170px;
+  min-height: 170px;
   /* margin-left: 20px; */
 }
 .bookPic{
-  position: absolute;
-  left: 0;
+  float: left;
   width: 110px;
   height: 151px;
   cursor: pointer;
 }
+.more{
+    cursor: pointer;
+    color: #3379c6;
+    font-size: 14px;
+    z-index: 999;
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+    margin-top: 10px;
+}
 .reviewTitle{
-  position: absolute;
-  left: 130px;
+  /* position: absolute;
+  left: 130px; */
+  float: left;
+  margin-left: 20px;
   color:#0171b0;
   font-size: 18px;
   top: 0px;
   cursor: pointer;
 }
-.lBar{
-  position: absolute;
-  left: 130px;
-  top: 40px;
-  height: 18px;
-  line-height: 18px;
-}
-.bookName{
-  position: relative;
-  font-size: 14px;
-  float: left;
-  /* display: inline-block; */
-}
-.rate{
-  /* position: relative; */
-  margin-left: 10px;
-  float: left;
-}
-.reviewText{
+/* .reviewText{
   text-overflow: -o-ellipsis-lastline;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -142,11 +143,39 @@ export default {
   text-align: left;
   font-size: 14px;
   cursor: pointer;
+} */
+.reviewText{
+  float: left;
+  margin-left: 20px;
+  margin-top: 30px;
+
 }
-.actionBar{
-  position: absolute;
-  right: 50px;
+.excerptContent{
+  padding-top: 15px;
+  /* margin-left: 70px; */
+  font-size: 15px;
+  text-align: left;
+  width: 800px;
+  line-height: 1.5;
+  min-height: 20px;
+  text-overflow: -o-ellipsis-lastline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
 }
+.excerptContent_all{
+  width: 800px;
+  padding-top: 15px;
+  /* margin-left: 70px; */
+  height: auto;
+  font-size: 15px;
+  text-align: left;
+  line-height: 1.5;
+  display: -webkit-box;
+}
+
 .like_icon{
   width: 16px;
   height: 16px;
@@ -154,9 +183,8 @@ export default {
 }
 .deleteBar{
   cursor: pointer;
-  position: absolute;
-  right: 50px;
+  float: right;
+
   color: #7f7f7f;
-  bottom: 0;
 }
 </style>

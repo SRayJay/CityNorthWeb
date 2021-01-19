@@ -136,25 +136,17 @@ export default {
       value: '',
       hasValue: this.$store.state.user.userInfo.userSecurityQuestion,
       answer: '',
+      isHasQuestion: false,
       nameNoProblem: true
-    }
-  },
-  computed: {
-    isHasQuestion: {
-      get() {
-        if (this.$store.state.user.userInfo.userSecurityQuestion !== '') {
-          return true
-        } else {
-          return false
-        }
-      },
-      set() {
-
-      }
     }
   },
   created: function() {
     console.log(this.$store.state.user.userInfo)
+    if (this.$store.state.user.userInfo.userSecurityQuestion) {
+      this.isHasQuestion = true
+    } else {
+      this.isHasQuestion = false
+    }
   },
   methods: {
     // 上传图片成功的函数，暂时没用到
@@ -248,6 +240,7 @@ export default {
           })
           that.$store.state.user.userInfo.userSecurityQuestion = that.value
           that.$store.state.user.userInfo.userSecurityQuestionAnswer = that.answer
+          that.isHasQuestion = true
           that.hasValue = that.value
         }
       })

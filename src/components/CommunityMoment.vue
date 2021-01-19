@@ -12,8 +12,12 @@
       v-html=" momentContent "
     />
     <div v-if="momentContent.trim()!==''&& content_haveMore" class="more" @click="getMore">--展开--</div>
-    <div v-if="momentPhoto.length>0" class="momentPhotos">
-      <img v-for="photo in momentPhoto" :key="photo.photoId" class="momentPhoto" :src="$host+photo.photoSrc" alt="">
+    <div v-if="momentInfo.review" style="cursor:pointer;" @click="toReview(momentInfo.review.reviewId)">
+      <simple-review :review-info="momentInfo.review" :user-name="momentInfo.review.userName" />
+    </div>
+    <div v-else>
+      <div v-if="momentPhoto.length>0" class="momentPhotos">
+        <el-image v-for="photo in momentPhoto" :key="photo.photoId" class="momentPhoto" :src="$host+photo.photoSrc" :preview-src-list="photolist" /></div>
     </div>
     <div class="momentTime" style="text-align:left;margin-left:70px">{{ momentTime }}</div>
     <div class="actionBar">
@@ -28,12 +32,17 @@
           <div class="like_num">{{ momentCommentNum }}</div>
         </div>
       </div>
-
       <div class="act">
-        <i class="el-icon-share act_icon" />
+        <div class="actContainer" title="转发">
+          <i class="el-icon-share act_icon" /></div>
       </div>
       <div class="act">
-        <i class="el-icon-star-off act_icon" />
+        <!-- <el-tooltip class="item" effect="light" content="举报" placement="bottom"> -->
+        <div class="actContainer" title="举报" @click="report">
+          <img src="@assets/icon/report.svg" class="act_icon my_icon" alt="举报">
+        </div>
+        <!-- </el-tooltip> -->
+
       </div>
     </div>
     <div>
@@ -80,7 +89,8 @@ export default {
       isPoint: (this.momentInfo.ispoint === 1),
       showComment: false,
       mycomment: '',
-      commentList: this.momentInfo.recommend
+      photolist: [],
+      commentList: this.momentInfo.recommend.reverse()
     }
   },
   mounted: function() {
@@ -106,6 +116,9 @@ export default {
         return true
       }
     },
+    toReview: function(reviewId) {
+      this.$router.push({ name: 'ReviewContentPage', params: { 'reviewid': reviewId }})
+    },
     showCommentBar: function() {
       this.showComment = !this.showComment
       // axios.post('/')
@@ -113,6 +126,23 @@ export default {
     getMore: function() {
       this.content_haveMore = !this.content_haveMore
       // console.log(this.$refs.content_text.offsetHeight)
+    },
+    report: function() {
+      if (this.$store.state.user.token) {
+        const that = this
+        const fd = new FormData()
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('momentId', this.momentInfo.momentId)
+        axios.post('/api/social/reportmoment', fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
+          console.log(res)
+          that.$message({
+            type: 'success',
+            message: '举报成功'
+          })
+        })
+      } else {
+        this.$message.error({ message: '请登录后操作' })
+      }
     },
     submitComment: function() {
       if (this.mycomment.trim() === '') {

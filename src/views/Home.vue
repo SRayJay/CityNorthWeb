@@ -13,9 +13,9 @@
           <img id="search_icon" src="@assets/icon/search.png" alt="">
         </div>
       </div>
-      <recom-books :recommend-book="recommendBook" />
+      <recom-books v-loading="loading" :recommend-book="recommendBook" />
       <anli-books />
-      <hot-books :hot-book="hotBook" />
+      <hot-books v-loading="loading" :hot-book="hotBook" />
     </div>
     <footer-line />
   </div>
@@ -28,16 +28,28 @@ export default {
   data: function() {
     return {
       hotBook: [],
-      recommendBook: []
+      recommendBook: [],
+      loading: false
     }
   },
   created: function() {
     const that = this
-    axios.post('/api/user/index', { headers: { 'token': that.$store.state.user.token }}).then(res => {
-      console.log(res)
-      that.hotBook = res.data.hotBook
-      that.recommendBook = res.data.recommendBook
-    })
+    this.loading = true
+    if (this.$store.state.user.token) {
+      axios.post('/api/user/index', { headers: { 'token': that.$store.state.user.token }}).then(res => {
+        console.log(res)
+        that.hotBook = res.data.hotBook
+        that.recommendBook = res.data.recommendBook
+        that.loading = false
+      })
+    } else {
+      axios.post('/api/user/index', { headers: { 'token': that.$store.state.user.token }}).then(res => {
+        console.log(res)
+        that.hotBook = res.data.hotBook
+        that.recommendBook = res.data.recommendBook
+        that.loading = false
+      })
+    }
   },
   methods: {
     search: function() {

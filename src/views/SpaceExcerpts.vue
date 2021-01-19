@@ -2,35 +2,33 @@
   <div>
     <Header />
     <div class="wrap">
-      <div class="mtitle">{{ userName }}的书评</div>
+      <div class="mtitle">{{ userName }}的书摘</div>
       <el-divider />
-      <div v-for="review in reviews.slice((currentPage-1)*10,currentPage*10)" :key="review.reviewId" v-loading="loading" class="reviewSingle">
-        <single-review :review-info="review" :owner="owner" @delete="deleteReview" />
-
-        <el-divider />
+      <div v-for="excerpt in excerpts.slice((currentPage-1)*10,currentPage*10)" :key="excerpt.excerptId" v-loading="loading" class="reviewSingle">
+        <single-excerpt :excerpt-info="excerpt" :owner="owner" @delete="deleteExcerpts" />
+        <!-- <el-divider /> -->
       </div>
       <el-pagination
         background
         layout="prev, pager, next"
         :current-page.sync="currentPage"
-        :total="reviews.length"
+        :total="excerpts.length"
         :hide-on-single-page="true"
         @current-change="handleCurrentChange"
       />
-
     </div>
-    <footer-line />
+    <footer-line class="footer" />
   </div>
 </template>
 
 <script>
 export default {
-  name: 'SpaceReviews',
+  name: 'SpaceExcerpts',
   data: function() {
     return {
-      reviews: [],
-      currentPage: 1,
+      excerpts: [],
       loading: false,
+      currentPage: 1,
       userName: this.$route.query.userName
     }
   },
@@ -47,9 +45,9 @@ export default {
     const that = this
     /*global axios */
     this.loading = true
-    axios.post('/api/user/review/' + this.$route.params.userid).then((res) => {
-      that.reviews = res.data.reviews.reverse()
-      console.log(that.reviews)
+    axios.post('/api/user/excerpts/' + this.$route.params.userid).then((res) => {
+      that.excerpts = res.data.excerpts.reverse()
+      console.log(res)
       that.loading = false
     }).catch((error) => {
       console.log(error)
@@ -60,10 +58,10 @@ export default {
       this.currentPage = currentPage
       window.scrollTo(0, 0)
     },
-    deleteReview: function(reviewId) {
-      for (var i = 0; i < this.reviews.length; i++) {
-        if (this.reviews[i].reviewId === reviewId) {
-          this.reviews.splice(i, 1)
+    deleteExcerpt: function(excerptId) {
+      for (var i = 0; i < this.excerpts.length; i++) {
+        if (this.excerpts[i].excerptId === excerptId) {
+          this.excerpts.splice(i, 1)
         }
       }
     }
@@ -85,5 +83,7 @@ export default {
     font-size: 20px;
     margin-top: 40px;
 }
-
+.footer{
+  display: inline-block;
+}
 </style>

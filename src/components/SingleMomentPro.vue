@@ -15,21 +15,28 @@
       v-html=" momentContent "
     />
     <div v-if="momentContent.trim()!==''&& content_haveMore" class="more" @click="getMore">--展开--</div>
-    <div v-if="momentPhoto.length>0" class="momentPhotos">
-      <img v-for="photo in momentPhoto" :key="photo.photoId" class="momentPhoto" :src="$host+photo.photoSrc" alt="">
+    <div v-if="momentInfo.review" style="text-align:left;margin-left:70px;">
+      <simple-review style="" :review-info="momentInfo.review" :user-name="userName" />
+    </div>
+    <div v-else>
+      <div v-if="momentPhoto.length>0" class="momentPhotos">
+        <img v-for="photo in momentPhoto" :key="photo.photoId" class="momentPhoto" :src="$host+photo.photoSrc" alt="">
+      </div>
     </div>
     <div class="momentTime" style="text-align:left;margin-left:70px">{{ momentTime }}</div>
     <div class="actionBar">
-      <img src="@assets/icon/like.png" class="l_icon" alt="">
+      <div style="cursor:pointer;height:20px;line-height:20px;" @click="addPoint">
+        <img :src="isPoint?likedPic:likePic" class="l_icon" alt="">
+      </div>
       <span class="pointNum">{{ pointNum }}</span>
       <img src="@assets/icon/comment.png" class="l_icon" style="margin-left:10px;" alt="评论">
-      <span class="commentNum">{{ commentNum }}条评论</span>
+      <span class="commentNum" @click="showComment=!showComment">{{ commentNum }}条评论</span>
       <div class="lcontainer" style="margin-left:10px;"><i class="el-icon-delete-solid" alt="删除" @click="showDeleteDialog" /></div>
     </div>
     <el-dialog
       title="提示"
       :visible.sync="deleteVisible"
-      width="13%"
+      width="20%"
       :before-close="handleClose"
     >
       <span>确定要删除吗</span>
@@ -38,6 +45,20 @@
         <el-button size="small" type="primary" @click="deleteMoment">确 定</el-button>
       </span>
     </el-dialog>
+    <div>
+      <el-collapse-transition>
+        <div v-show="showComment" class="commentBar">
+          <div v-if="this.$store.state.user.token" class="commentUserBar">
+            <img :src="$host+this.$store.state.user.userInfo.userPhoto" class="commentAvatar" alt="">
+            <input v-model="mycomment" placeholder="说两句吧" type="text" class="commentInput">
+            <button class="commentBtn" @click="submitComment">评论</button>
+          </div>
+          <div class="commentAll">
+            <community-single-comment v-for="comment in commentList" :key="comment.recommendId" :comment-info="comment" />
+          </div>
+        </div>
+      </el-collapse-transition>
+    </div>
   </div>
 </template>
 
@@ -61,9 +82,15 @@ export default {
       momentPhoto: this.momentInfo.momentPhoto,
       pointNum: this.momentInfo.pointNum,
       commentNum: this.momentInfo.commitNum,
+      mycomment: '',
+      commentList: this.momentInfo.recommend.reverse(),
       content_haveMore: false,
       userLable: this.momentInfo.userSelfLable,
-      deleteVisible: false
+      deleteVisible: false,
+      showComment: false,
+      isPoint: (this.momentInfo.ispoint === 1),
+      likedPic: require('@assets/icon/liked.png'),
+      likePic: require('@assets/icon/like.png')
     }
   },
   mounted: function() {
@@ -88,6 +115,9 @@ export default {
         return true
       }
     },
+    submitComment: function() {
+
+    },
     getMore: function() {
       this.content_haveMore = !this.content_haveMore
     },
@@ -104,6 +134,36 @@ export default {
         that.deleteVisible = false
         that.$emit('delete', that.momentInfo.momentId)
       })
+    },
+    addPoint: function() {
+      console.log(this.$store.state.user.userInfo.userId)
+      console.log(this.momentInfo.userId)
+      if (!this.$store.state.user.token) {
+        this.$message.error({
+          message: '请登录后操作'
+        })
+      } else if (this.$store.state.user.userInfo.userId === this.momentInfo.userId) {
+        this.$message({
+          type: 'warning',
+          message: '不能给自己的动态点赞'
+        })
+      } else {
+        this.isPoint = !this.isPoint
+        const fd = new FormData()
+        const that = this
+        fd.append('userId', this.$store.state.user.userInfo.userId)
+        fd.append('momentId', this.momentInfo.momentId)
+        axios.post('/api/social/pointmoment', fd, { headers: {
+          'token': that.$store.state.user.token
+        }}).then((res) => {
+          console.log(res)
+          if (that.isPoint) {
+            that.pointNum += 1
+          } else {
+            that.pointNum -= 1
+          }
+        })
+      }
     }
   }
 }
@@ -127,7 +187,7 @@ export default {
 .l_icon{
     width: 20px;
     height: 20px;
-    text-align: left;
+    /* text-align: left; */
 }
 .userAvatar{
   height: 50px;
@@ -224,7 +284,52 @@ margin-left: 70px;
 .commentNum{
     /* position: absolute; */
     line-height: 15px;
+    cursor: pointer;
     /* display: inline; */
     margin: auto 5px;
+}
+.commentBar{
+  background: #fff;
+  min-height: 32px;
+  margin-left: 50px;
+}
+.commentUserBar{
+  position: relative;
+  height: 32px;
+  line-height: 32px;
+  width: 625px;
+  margin:10px;
+  display: inline-block;
+}
+.commentAvatar{
+  width: 32px;
+  height: 32px;
+ position: absolute;
+ left: 0px;
+}
+.commentInput{
+  /* vertical-align: middle; */
+  width: 500px;
+  height: 32px;
+  padding: 2px;
+  font-size: 13px;
+  text-align: left;
+  display: inline-block;
+  position: absolute;
+  left: 50px;
+  text-indent: 0.5em;
+  /* border-radius: 5px; */
+  /* border: none; */
+}
+.commentBtn{
+  color: #fff;
+  background: rgba(64, 158, 255, 1);
+  height: 32px;
+  width: 66px;
+  position: absolute;
+  right: 0px;
+  border: none;
+  border-radius: 5px;
+  font-size:14px;
 }
 </style>

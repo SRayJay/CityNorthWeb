@@ -16,7 +16,7 @@
       </div>
       <div class="middleBar">
 
-        <span class="search_title">搜索{{ this.$route.params.searchContent }}</span>
+        <span class="search_title">搜索  <span style="color:#0171B0;">{{ this.$route.params.searchContent }}</span></span>
         <el-divider class="divider" />
         <div v-if="nowBar===0" ref="middleBar">
           <div v-if="result.authors.length>0">
@@ -71,57 +71,33 @@
       </div>
       <div class="rightBar">
         <span class="label_title">热门标签</span>
-        <btn-more class="moreBtn" />
+        <btn-more class="moreBtn" @toMore="toCategory" />
         <el-divider class="divider_right" />
         <div class="lineBar">
           <div class="mtitle">中国文学</div>
           <div class="labelBar">
-            <div class="label">小说</div>
-            <div class="label">随笔</div>
-            <div class="label">诗歌</div>
-            <div class="label">社科</div>
-            <div class="label">散文</div>
-            <div class="label">传记</div>
-            <div class="label">人文</div>
+            <div v-for="(item,index) in category" :key="index" class="label" @click="toCategory_query('中国文学',item)">{{ item }}</div>
           </div>
           <div class="mydivider" />
         </div>
         <div class="lineBar">
           <div class="mtitle">日本文学</div>
           <div class="labelBar">
-            <div class="label">小说</div>
-            <div class="label">随笔</div>
-            <div class="label">诗歌</div>
-            <div class="label">社科</div>
-            <div class="label">散文</div>
-            <div class="label">传记</div>
-            <div class="label">人文</div>
+            <div v-for="(item,index) in category" :key="index" class="label" @click="toCategory_query('日本文学',item)">{{ item }}</div>
           </div>
           <div class="mydivider" />
         </div>
         <div class="lineBar">
           <div class="mtitle">欧美文学</div>
           <div class="labelBar">
-            <div class="label">小说</div>
-            <div class="label">随笔</div>
-            <div class="label">诗歌</div>
-            <div class="label">社科</div>
-            <div class="label">散文</div>
-            <div class="label">传记</div>
-            <div class="label">人文</div>
+            <div v-for="(item,index) in category" :key="index" class="label" @click="toCategory_query('欧美文学',item)">{{ item }}</div>
           </div>
           <div class="mydivider" />
         </div>
         <div class="lineBar">
           <div class="mtitle">拉美文学</div>
           <div class="labelBar">
-            <div class="label">小说</div>
-            <div class="label">随笔</div>
-            <div class="label">诗歌</div>
-            <div class="label">社科</div>
-            <div class="label">散文</div>
-            <div class="label">传记</div>
-            <div class="label">人文</div>
+            <div v-for="(item,index) in category" :key="index" class="label" @click="toCategory_query('拉美文学',item)">{{ item }}</div>
           </div>
           <div class="mydivider" />
         </div>
@@ -137,7 +113,8 @@ export default {
   data: function() {
     return {
       result: JSON.parse(this.$route.query.result),
-      nowBar: 0
+      nowBar: 0,
+      category: ['小说', '随笔', '诗歌', '社科', '散文', '传记', '人文']
     }
   },
 
@@ -189,6 +166,12 @@ export default {
     },
     toAuthorDetails: function(authorId) {
       this.$router.push({ name: 'author', params: { authorid: authorId }})
+    },
+    toCategory: function() {
+      this.$router.push({ name: 'Category' })
+    },
+    toCategory_query: function(label, cate) {
+      this.$router.push({ name: 'Category', query: { 'label': label, 'category': cate }})
     },
     focus: function(id) {
       this.nowBar = id
@@ -357,6 +340,7 @@ export default {
     width: 300px;
   }
   .label{
+    cursor: pointer;
     float: left;
     width: 50px;
     color: #0171B0;

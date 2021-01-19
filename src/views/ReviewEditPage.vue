@@ -3,19 +3,67 @@
     <Header />
     <div class="wrap">
       <div class="bookBar">
-        <div class="bookPhoto">
-          <img :src="this.$host+bookInfo.bookPhotoUrl" alt="">
+        <div v-if="!nobook">
+          <div class="bookPhoto">
+            <img :src="$host+bookInfo.bookPhotoUrl" alt="">
+          </div>
+          <div class="bookName">{{ bookInfo.bookName }}</div>
+          <button v-if="!this.$route.query.bookInfo" class="reselectBtn" @click="reselect">重选</button>
+          <div class="bookAuthor">{{ '['+bookInfo.authorCountry+']'+bookInfo.authorName }}</div>
+          <div class="publisherAndProducer">{{ bookInfo.producerName }}·{{ bookInfo.publisherName }}</div>
+          <div class="bookrate">
+            <el-rate :value="bookInfo.bookScore/2" disabled />
+          </div>
+          <div class="rate_num">{{ bookInfo.bookScore.toFixed(1) }}</div>
         </div>
-        <div class="bookName">{{ bookInfo.bookName }}</div>
-        <div class="bookAuthor">{{ '['+bookInfo.authorCountry+']'+bookInfo.authorName }}</div>
-        <div class="publisherAndProducer">{{ bookInfo.producerName }}·{{ bookInfo.publisherName }}</div>
-        <div class="bookrate">
-          <el-rate :value="bookInfo.bookScore/2" disabled />
+        <div v-else>
+          <div class="bookPhoto" @click="selectBook">
+            <img src="@assets/icon/no_book.png" alt="">
+          </div>
+          <div class="bookName">从书单中挑选一门书吧</div>
+          <button v-if="!nobook" class="reselectBtn" @click="reselect">重选</button>
+
         </div>
-        <div class="rate_num">{{ bookInfo.bookScore.toFixed(1) }}</div>
+        <el-dialog
+          title="选择书籍"
+          :visible.sync="selectDialogVisible"
+          width="30%"
+        >
+          <span style="float:left;margin-bottom:10px;font-size:16px;">我已读的书单:</span>
+          <el-table
+            v-loading="selectLoading"
+            max-height="300"
+            :data="booklist"
+            stripe
+            border
+            style="width: 100%;margin-bottom:10px;"
+            highlight-current-row
+            @current-change="handleCurrentChange"
+          >
+            <el-table-column
+              prop="bookName"
+              label="书名"
+              width="180"
+            />
+            <el-table-column
+              prop="authorName"
+              label="作者"
+              width="180"
+            />
+            <el-table-column
+              prop="publisherName"
+              label="出版社"
+            />
+          </el-table>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="selectDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="selectone">选 择</el-button>
+          </span>
+        </el-dialog>
       </div>
-      <div v-if="bookInfo!=null">
-        <div class="nextBar">
+
+      <div>
+        <div v-if="!nobook" class="nextBar">
           <div class="text">给个评价吧</div>
           <div class="rateBar">
             <el-rate v-model="gaveRate" allow-half class="rate" />
@@ -62,15 +110,26 @@ export default {
     return {
       showSubmitDaialog: false,
       bookInfo: {},
+      nobook: true,
       gaveRate: 0,
       reviewTitle: '',
       editor: null,
-      info_: null
+      info_: null,
+      selectLoading: false,
+      selectDialogVisible: false,
+      booklist: [],
+      currentRow: {}
     }
   },
 
   created() {
-    this.bookInfo = JSON.parse(this.$route.query.bookInfo)
+    if (this.$route.query.bookInfo) {
+      this.nobook = false
+      this.bookInfo = JSON.parse(this.$route.query.bookInfo)
+    } else {
+      this.nobook = true
+      this.bookInfo = {}
+    }
   },
 
   mounted() {
@@ -110,6 +169,30 @@ export default {
       } else {
         this.showSubmitDaialog = true
       }
+    },
+    selectBook() {
+      const that = this
+      this.selectDialogVisible = true
+      this.selectLoading = true
+      axios.post('/api/user/haveread/' + this.$store.state.user.userInfo.userId).then(res => {
+        console.log(res)
+        that.booklist = res.data.books
+        that.selectLoading = false
+      })
+    },
+    reselect() {
+      this.selectDialogVisible = true
+    },
+    selectone() {
+      console.log(111)
+      this.bookInfo = this.currentRow
+      console.log(this.bookInfo)
+      this.selectDialogVisible = false
+      this.nobook = false
+    },
+    handleCurrentChange(val) {
+      this.currentRow = val
+      console.log(this.currentRow)
     },
     postReview() {
       this.showSubmitDaialog = false
@@ -151,11 +234,8 @@ export default {
         'foreColor', // 文字颜色
         'indent', // 缩进
         'link', // 插入链接
-        'list', // 列表
         'justify', // 对齐方式
         'quote', // 引用
-        'emoticon', // 表情
-        'image', // 插入图片
         'splitLine',
         'undo', // 撤销
         'redo' // 重复
@@ -261,6 +341,19 @@ export default {
     top: 115px;
     font-size: 20px;
     color: #F59A23;
+}
+.reselectBtn{
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  height: 30px;
+  width: 83px;
+  background: #555;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 .title{

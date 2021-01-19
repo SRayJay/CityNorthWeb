@@ -4,7 +4,7 @@
     <div class="wrap">
       <div class="mtitle">{{ userName }}的动态</div>
       <el-divider />
-      <div v-for="moment in moments.slice((currentPage-1)*10,currentPage*10)" :key="moment.momentId" class="momentsSingle">
+      <div v-for="moment in moments.slice((currentPage-1)*10,currentPage*10)" :key="moment.momentId" v-loading="loading" class="momentsSingle">
         <single-moment-pro :moment-info="moment" @delete="deleteMoment" />
         <el-divider />
       </div>
@@ -28,14 +28,18 @@ export default {
     return {
       moments: [],
       currentPage: 1,
+      loading: false,
       userName: this.$route.query.userName
     }
   },
   created: function() {
+    const that = this
     /*global axios */
+    this.loading = true
     axios.post('/api/user/moment/' + this.$route.params.userid).then((res) => {
       console.log(res)
-      this.moments = res.data.moments.reverse()
+      that.moments = res.data.moments.reverse()
+      that.loading = false
     }).catch((error) => {
       console.log(error)
     })
@@ -61,6 +65,7 @@ export default {
     position: relative;
     width: 1024px;
     margin: 0 auto;
+    min-height: 600px;
     padding-bottom: 30px;
 }
 .mtitle{
@@ -69,7 +74,5 @@ export default {
     font-size: 20px;
     margin-top: 40px;
 }
-.momentsSingle{
 
-}
 </style>

@@ -14,12 +14,11 @@
               <div class="publisher">{{ anlibooks[index].publisher }}</div>
               <div class="intro">{{ anlibooks[index].intro }}</div>
               <el-rate
-                v-model="anlibooks[index].rate"
+                :value="anlibooks[index].rate/2"
                 class="rate"
                 disabled
-                show-score
+
                 text-color="#ff9900"
-                score-template="{value}"
               />
               <div class="category">
                 {{ anlibooks[index].category }}
@@ -49,32 +48,35 @@ export default {
       anlibooks: [
         {
           // index: 0,
-          img: require('@assets/babieta.jpg'),
+          bookid: 288,
+          img: this.$host + '/photo/book/288.jpg',
           title: '碎片',
           author: '[意]埃莱娜·费兰特',
           publisher: '出版社：人民文学出版社',
           intro: '《碎片》（2016）是意大利作家埃莱娜·费兰特20 余年来的书信、访谈和散文集。作家在书中袒露了自己对写作风格和主题的探索历程，并回顾了自己经历的自我怀疑和突破，这些对话睿智地诠释了女性和家庭、神话和文化、城市和记忆，以及作家和读者的复杂关系。《碎片》既是深入费兰特的文学世界的指引，同时也是一份智性、鲜明而坚定的文学宣言。',
-          rate: 4.5,
+          rate: 9.0,
           category: '小说'
         },
         {
           // index: 1,
-          img: require('@assets/daofeng.jpg'),
+          bookid: 123,
+          img: this.$host + '/photo/book/123.jpg',
           title: '刀锋',
           author: '[英]毛姆',
           publisher: '出版社：人民文学出版社',
           intro: '《碎片》（2016）是意大利作家埃莱娜·费兰特20 余年来的书信、访谈和散文集。作家在书中袒露了自己对写作风格和主题的探索历程，并回顾了自己经历的自我怀疑和突破，这些对话睿智地诠释了女性和家庭、神话和文化、城市和记忆，以及作家和读者的复杂关系。《碎片》既是深入费兰特的文学世界的指引，同时也是一份智性、鲜明而坚定的文学宣言。',
-          rate: 4.5,
+          rate: 9.0,
           category: '小说'
         },
         {
           // index: 2,
-          img: require('@assets/bailuyuan.jpg'),
+          bookid: 58,
+          img: this.$host + '/photo/book/58.jpg',
           title: '白鹿原',
           author: '陈忠实',
           publisher: '出版社：人民文学出版社',
           intro: '《碎片》（2016）是意大利作家埃莱娜·费兰特20 余年来的书信、访谈和散文集。作家在书中袒露了自己对写作风格和主题的探索历程，并回顾了自己经历的自我怀疑和突破，这些对话睿智地诠释了女性和家庭、神话和文化、城市和记忆，以及作家和读者的复杂关系。《碎片》既是深入费兰特的文学世界的指引，同时也是一份智性、鲜明而坚定的文学宣言。',
-          rate: 4.5,
+          rate: 9.0,
           category: '小说'
         }
       ],
@@ -82,12 +84,19 @@ export default {
     }
   },
   created() {
+    // const that = this
+    /*global axios */
+    axios.post('/api/book/288').then(res => {
+      console.log(res)
+      // that.anlibooks.push(res.data.book)
+    })
     this.move()
   },
   methods: {
     getInfo() {
       var a = -(this.calleft / 664)
       console.log(this.anlibooks[a].author)
+      this.$router.push({ name: 'book', params: { bookid: this.anlibooks[a].bookid }})
     },
     toDot(index) {
       this.calleft = -(index * 664)

@@ -10,13 +10,13 @@
           </div>
           <div class="text">诺贝尔文学</div>
         </div>
-        <div class="column">
+        <div class="column" @click="toLixiangguo">
           <div class="pic">
             <img class="column_pic" src="@assets/lixiangguo.svg" alt="">
           </div>
           <div class="text">理想国</div>
         </div>
-        <div class="column">
+        <div class="column" @click="toYiwen">
           <div class="pic">
             <img class="column_pic" src="@assets/yiwen.svg" alt="">
           </div>
@@ -24,19 +24,19 @@
         </div>
       </div>
       <div class="line2">
-        <div class="column">
+        <div class="column" @click="toYilin">
           <div class="pic">
             <img class="column_pic" src="@assets/yilin.svg" alt="">
           </div>
           <div class="text">译林出版</div>
         </div>
-        <div class="column">
+        <div class="column" @click="toZhongxin">
           <div class="pic">
             <img class="column_pic" src="@assets/zhongxin.svg" alt="">
           </div>
           <div class="text">中信出版</div>
         </div>
-        <div class="column">
+        <div class="column" @click="toShiji">
           <div class="pic">
             <img class="column_pic" src="@assets/wenjing.svg" alt="">
           </div>
@@ -59,6 +59,21 @@ export default {
   methods: {
     toNobel: function() {
       this.$router.push('/columns/nobel')
+    },
+    toLixiangguo: function() {
+      this.$router.push({ name: 'LixiangguoColumn' })
+    },
+    toYiwen: function() {
+      this.$router.push({ name: 'YiwenColumn' })
+    },
+    toYilin: function() {
+      this.$router.push({ name: 'YilinColumn' })
+    },
+    toZhongxin: function() {
+      this.$router.push({ name: 'ZhongxinColumn' })
+    },
+    toShiji: function() {
+      this.$router.push({ name: 'ShijiColumn' })
     }
   }
 }

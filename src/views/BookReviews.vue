@@ -2,10 +2,10 @@
   <div>
     <Header />
     <div class="wrap">
-      <div class="mtitle">{{ userName }}的书评</div>
+      <div class="mtitle">{{ '《'+bookInfo.bookName+'》' }}的书评</div>
       <el-divider />
       <div v-for="review in reviews.slice((currentPage-1)*10,currentPage*10)" :key="review.reviewId" v-loading="loading" class="reviewSingle">
-        <single-review :review-info="review" :owner="owner" @delete="deleteReview" />
+        <single-book-review :review-info="review" :user-photo="review.userPhoto" :user-name="review.userName" />
 
         <el-divider />
       </div>
@@ -25,35 +25,41 @@
 
 <script>
 export default {
-  name: 'SpaceReviews',
+  name: 'BookReviews',
   data: function() {
     return {
+      bookInfo: {},
+      bookId: 0,
       reviews: [],
       currentPage: 1,
-      loading: false,
-      userName: this.$route.query.userName
-    }
-  },
-  computed: {
-    owner() {
-      if (this.$store.state.user.token && this.$store.state.user.userInfo.userId === parseInt(this.$route.params.userid)) {
-        return true
-      } else {
-        return false
-      }
+      loading: false
     }
   },
   created: function() {
-    const that = this
     /*global axios */
+    const that = this
+    const fd = new FormData()
+    this.bookId = this.$route.params.bookid
     this.loading = true
-    axios.post('/api/user/review/' + this.$route.params.userid).then((res) => {
-      that.reviews = res.data.reviews.reverse()
-      console.log(that.reviews)
-      that.loading = false
-    }).catch((error) => {
-      console.log(error)
-    })
+    if (this.$store.state.user.token) {
+      fd.append('userId', that.$store.state.user.userInfo.userId)
+      axios.post('/api/book/' + that.bookId, fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
+        const { data } = res
+        this.bookInfo = data.book
+        this.reviews = data.review
+        console.log(this.bookInfo)
+        console.log(this.reviews)
+        that.loading = false
+      })
+    } else {
+      axios.post('/api/book/' + that.bookId).then(res => {
+        const { data } = res
+        this.bookInfo = data.book
+        this.reviews = data.review
+        console.log(data)
+        that.loading = false
+      })
+    }
   },
   methods: {
     handleCurrentChange: function(currentPage) {
