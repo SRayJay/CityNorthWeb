@@ -15,7 +15,7 @@
       v-html=" momentContent "
     />
     <div v-if="momentContent.trim()!==''&& content_haveMore" class="more" @click="getMore">--展开--</div>
-    <div v-if="momentInfo.review" style="text-align:left;margin-left:70px;">
+    <div v-if="momentInfo.review" style="text-align:left;margin-left:70px;cursor:pointer;" @click="toReview(momentInfo.review.reviewId)">
       <simple-review style="" :review-info="momentInfo.review" :user-name="userName" />
     </div>
     <div v-else>
@@ -134,6 +134,9 @@ export default {
         that.deleteVisible = false
         that.$emit('delete', that.momentInfo.momentId)
       })
+    },
+    toReview: function(reviewId) {
+      this.$router.push({ name: 'ReviewContentPage', params: { 'reviewid': reviewId }})
     },
     addPoint: function() {
       console.log(this.$store.state.user.userInfo.userId)

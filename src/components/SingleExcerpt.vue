@@ -155,7 +155,7 @@ export default {
   /* margin-left: 70px; */
   font-size: 15px;
   text-align: left;
-  width: 800px;
+  width: 850px;
   line-height: 1.5;
   min-height: 20px;
   text-overflow: -o-ellipsis-lastline;
@@ -166,7 +166,7 @@ export default {
   -webkit-box-orient: vertical;
 }
 .excerptContent_all{
-  width: 800px;
+  width: 850px;
   padding-top: 15px;
   /* margin-left: 70px; */
   height: auto;

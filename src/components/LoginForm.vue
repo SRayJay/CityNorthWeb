@@ -46,6 +46,9 @@
           </span>
         </el-form-item>
       </el-tooltip>
+      <div class="l_icon" @click="open">忘记密码</div>
+
+      <!-- <i class="el-icon-question l_icon" /> -->
       <!-- <el-checkbox v-model="checked" class="login_remember" label-position="left">记住密码</el-checkbox> -->
       <!-- <el-form-item style="width:100%" /> -->
       <el-button
@@ -196,7 +199,8 @@ export default {
       },
       capsTooltip: false,
       loading: false,
-      passwordType: 'password'
+      passwordType: 'password',
+      dialogVisible: false
     }
   },
   watch: {
@@ -224,6 +228,17 @@ export default {
       } else {
         this.passwordType = 'password'
       }
+    },
+    open() {
+      this.$alert('请联系客服13857021812', '忘记密码', {
+        confirmButtonText: '确定',
+        callback: action => {
+          // this.$message({
+          //   type: 'info',
+          //   message: `action: ${action}`
+          // })
+        }
+      })
     },
     showCheckPwd() {
       if (this.passwordType === 'password') {
@@ -336,7 +351,14 @@ $dark_gray:#889aa4;
         position: relative;
         margin-left: 40px;
     }
-
+    .l_icon{
+      color: rgba($color: #3379cc, $alpha: 0.7);
+      font-size: 14px;
+      float: right;
+      height: 14px;
+      cursor: pointer;
+      margin-bottom: 5px;
+    }
     .title_left{
       // margin: 0px auto 0px auto;
       margin-bottom: 40px;

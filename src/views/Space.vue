@@ -80,7 +80,7 @@
       </div>
       <div v-loading="loading" class="excerptsBar">
         <div class="mtitle">{{ rencheng }}的书摘</div>
-        <btn-more class="moreBtn" @click="toExcerpts" />
+        <btn-more class="moreBtn" @toMore="toExcerpts" />
         <single-excerpt v-if="excerpts.length>0" :excerpt-info="excerpts[excerpts.length-1]" class="singleReview" />
         <single-excerpt v-if="excerpts.length>1" :excerpt-info="excerpts[excerpts.length-2]" class="singleReview" />
       </div>

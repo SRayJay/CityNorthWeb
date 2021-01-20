@@ -8,7 +8,7 @@
         <!-- <div class="like">
           <img src="@assets/icon/like.png" class="like_icon" alt="">{{ commentInfo.pointNum }}
         </div> -->
-        <div class="replyBtn">回复</div>
+        <!-- <div class="replyBtn">回复</div> -->
       </div>
     </div>
     <div class="nextBar">

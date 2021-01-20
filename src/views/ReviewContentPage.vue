@@ -102,7 +102,7 @@ export default {
       authorName: '',
       comments: [],
       reviewid: this.$route.params.reviewid,
-      default_avatar: require('@assets/avatar.jpg')
+      default_avatar: require('@assets/default_avatar.jpg')
     }
   },
   created() {

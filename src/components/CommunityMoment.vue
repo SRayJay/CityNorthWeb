@@ -1,7 +1,7 @@
 <template>
   <div class="l_wrap">
-    <img :src="this.$host+avatar" class="userAvatar" alt="">
-    <div class="userInfoBar">
+    <img :src="this.$host+avatar" class="userAvatar" alt="" @click="toUserSpace">
+    <div class="userInfoBar" @click="toUserSpace">
       <div class="userName">{{ userName }}</div>
       <div class="momentTime">{{ userLable }}</div>
     </div>
@@ -33,8 +33,23 @@
         </div>
       </div>
       <div class="act">
-        <div class="actContainer" title="转发">
+        <div class="actContainer" title="转发" @click="shareVisible=true">
           <i class="el-icon-share act_icon" /></div>
+        <el-dialog title="转发动态" width="540px" :before-close="handleClose" :visible.sync="shareVisible" :close-on-click-modal="false" :close-on-press-escape="false">
+          <el-input
+            v-model="shareArea"
+            resize="none"
+            style="outline:none;padding:12px"
+            type="textarea"
+            placeholder="说点什么吧"
+            :autosize="{ minRows: 3, maxRows: 5}"
+          />
+          <simple-moment :moment-info="momentInfo" />
+          <simple-review style="margin-top:10px;" :review-info="review" :user-name="user.userName" />
+          <div slot="footer" class="dialog-footer">
+            <button class="submitBtn" @click="share"> 转 发</button>
+          </div>
+        </el-dialog>
       </div>
       <div class="act">
         <!-- <el-tooltip class="item" effect="light" content="举报" placement="bottom"> -->
@@ -63,8 +78,10 @@
 </template>
 
 <script>
+import SimpleMoment from './SimpleMoment.vue'
 export default {
   name: 'CommunityMoment',
+  components: { SimpleMoment },
   props: {
     'momentInfo': {
       type: Object,
@@ -89,7 +106,9 @@ export default {
       isPoint: (this.momentInfo.ispoint === 1),
       showComment: false,
       mycomment: '',
+      shareArea: '',
       photolist: [],
+      shareVisible: false,
       commentList: this.momentInfo.recommend.reverse()
     }
   },
@@ -166,6 +185,9 @@ export default {
         })
       }
     },
+    toUserSpace: function() {
+      this.$router.push({ name: 'Space', params: { userid: this.momentInfo.userId }})
+    },
     like: function() {
       console.log(this.$store.state.user.userInfo.userId)
       console.log(this.momentInfo.userId)
@@ -220,10 +242,12 @@ export default {
 .userAvatar{
   height: 50px;
   width: 50px;
+  cursor: pointer;
   float: left;
 }
 .userInfoBar{
   float: left;
+  cursor: pointer;
   /* display: inline-block; */
   margin-left: 20px;
 }

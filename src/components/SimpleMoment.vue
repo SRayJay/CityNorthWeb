@@ -3,18 +3,18 @@
     <div class="userInfoBar">
       <div class="review_userName">
         @{{ userName }}
-      </div>：发表了一篇书评
+      </div>：{{}}
     </div>
-    <img :src="$host+reviewInfo.bookPhoto" class="bookPhoto" alt="">
+    <!-- <img :src="$host+reviewInfo.bookPhoto" class="bookPhoto" alt="">
     <div class="reviewTitle">{{ reviewInfo.reviewTitle }}</div>
     <div class="bookName">{{ '《'+reviewInfo.bookName +'》' }}</div>
-    <div class="reviewContent">{{ reviewInfo.reviewText }}</div>
+    <div class="reviewContent">{{ reviewInfo.reviewText }}</div> -->
   </div>
 </template>
 
 <script>
 export default {
-  name: 'SimpleReview',
+  name: 'SimpleMoment',
   props: {
     reviewInfo: {
       type: Object,

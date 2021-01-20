@@ -35,15 +35,19 @@ export default {
   created: function() {
     const that = this
     this.loading = true
+    const fd = new FormData()
+
     if (this.$store.state.user.token) {
-      axios.post('/api/user/index', { headers: { 'token': that.$store.state.user.token }}).then(res => {
+      fd.append('userId', this.$store.state.user.userInfo.userId)
+      axios.post('/api/user/index', fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
         console.log(res)
         that.hotBook = res.data.hotBook
         that.recommendBook = res.data.recommendBook
         that.loading = false
       })
     } else {
-      axios.post('/api/user/index', { headers: { 'token': that.$store.state.user.token }}).then(res => {
+      fd.append('userId', 0)
+      axios.post('/api/user/index', fd, { headers: { 'token': that.$store.state.user.token }}).then(res => {
         console.log(res)
         that.hotBook = res.data.hotBook
         that.recommendBook = res.data.recommendBook
